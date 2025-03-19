@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Orchid\Layouts;
-
+use Orchid\Screen\Actions\Link;
+use App\Models\Product;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 
@@ -27,6 +28,14 @@ class ProductListLayout extends Table
             
             TD::make('created_at', 'Date de Création')
                 ->render(fn ($product) => $product->created_at->format('Y-m-d')),
+
+            TD::make('Action')
+                ->render(fn (Product $product) => 
+                    Link::make()
+                        ->icon('pencil')
+                        ->route('platform.product.edit', $product->id)
+                ),
+            
 
         ];
     }

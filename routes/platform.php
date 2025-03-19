@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
 use App\Orchid\Screens\ProductScreen;
+use App\Orchid\Screens\ProductAddScreen;
+use App\Orchid\Screens\ProductEditScreen;
 use App\Orchid\Screens\ClientsScreen;
 
 /*
@@ -31,6 +33,12 @@ Route::screen('/main', PlatformScreen::class)
 // Produit
 Route::screen('/product', ProductScreen::class)
     ->name('platform.Product');
+
+// Ajouter produit 
+Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
+
+// Edit  produit 
+Route::screen('/product/edit', ProductEditScreen::class)->name('platform.product.edit');
 
 // Clients
 Route::screen('/clients', ClientsScreen::class)
