@@ -1,12 +1,10 @@
 <?php
 
 namespace App\Orchid\Screens;
-use Orchid\Screen\Actions\Link;
-use App\Models\Client;
-use App\Orchid\Layouts\ClientListLayout;
+
 use Orchid\Screen\Screen;
 
-class ClientScreen extends Screen
+class VentesScreen extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
@@ -15,9 +13,7 @@ class ClientScreen extends Screen
      */
     public function query(): iterable
     {
-        return [
-            'clients' => Client::paginate(10),
-        ];
+        return [];
     }
 
     /**
@@ -27,7 +23,7 @@ class ClientScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Liste des Clients';
+        return 'Ventes';
     }
 
     /**
@@ -37,11 +33,7 @@ class ClientScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [
-            Link::make(__('Add'))
-                    ->icon('bs.plus-circle')
-                    ->route('platform.clients.add'),
-        ];
+        return [];
     }
 
     /**
@@ -51,8 +43,6 @@ class ClientScreen extends Screen
      */
     public function layout(): iterable
     {
-        return [
-            ClientListLayout::class,
-        ];
+        return [];
     }
 }

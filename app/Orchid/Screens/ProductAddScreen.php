@@ -93,6 +93,6 @@ class ProductAddScreen extends Screen
             Toast::info('Produit ajouté avec succès.');
 
             // Redirection vers la liste des produits
-            return redirect()->route('platform.Product');
+            return redirect()->route('platform.product');
         }
 }

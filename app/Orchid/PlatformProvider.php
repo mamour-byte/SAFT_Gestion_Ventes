@@ -36,17 +36,21 @@ class PlatformProvider extends OrchidServiceProvider
         return [
 
             Menu::make('Accueil')
-                ->icon('bi-house')
+                ->icon('house')
                 ->title('Navigation')
                 ->route('platform.main'),
 
+            Menu::make('Ventes')
+                ->icon('cash-coin')
+                ->route('platform.ventes'),
+
             Menu::make('Product')
-                ->icon('bi-bag-fill')
-                ->route('platform.Product'),
+                ->icon('bag-fill')
+                ->route('platform.product'),
 
             Menu::make('Clients')
-                ->icon('bi-people')
-                ->route('platform.Clients'),
+                ->icon('people')
+                ->route('platform.clients'),
 
             Menu::make(__('Users'))
                 ->icon('bs.people')

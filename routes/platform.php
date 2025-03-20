@@ -14,6 +14,7 @@ use App\Orchid\Screens\ProductAddScreen;
 use App\Orchid\Screens\ProductEditScreen;
 use App\Orchid\Screens\ClientsScreen;
 use App\Orchid\Screens\ClientAddScreen;
+use App\Orchid\Screens\VentesScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,25 +26,28 @@ use App\Orchid\Screens\ClientAddScreen;
 | contains the need "dashboard" middleware group. Now create something great!
 |
 */
-// Accueil
+// Platform Accueil
 Route::screen('/main', PlatformScreen::class)
     ->name('platform.main');
 
-// Produit
-Route::screen('/product', ProductScreen::class)
-    ->name('platform.Product');
+// Platform Produit
+Route::screen('/product', ProductScreen::class)->name('platform.product');
 
 // Ajouter produit 
 Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
 
 // Edit  produit 
-Route::screen('admin/product/edit/{id}', ProductEditScreen::class)->name('platform.product.edit');
+Route::screen('/product/edit/{id}', ProductEditScreen::class)->name('platform.product.edit');
 
-// Clients
-Route::screen('/clients', ClientsScreen::class)->name('platform.Clients');
+// Platform Clients
+Route::screen('/clients', ClientsScreen::class)->name('platform.clients');
 
 // Ajouter Clients
-Route::screen('/clients/add', ClientAddScreen::class)->name('platform.Clients.add');
+Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add');
+
+
+// Platform Ventes 
+Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
 
 
 
