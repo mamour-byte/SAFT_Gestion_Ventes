@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use App\Orchid\Screens\PlatformScreen;
-use App\Orchid\Screens\Role\RoleEditScreen;
-use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
@@ -15,6 +13,7 @@ use App\Orchid\Screens\ProductScreen;
 use App\Orchid\Screens\ProductAddScreen;
 use App\Orchid\Screens\ProductEditScreen;
 use App\Orchid\Screens\ClientsScreen;
+use App\Orchid\Screens\ClientAddScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,11 +37,13 @@ Route::screen('/product', ProductScreen::class)
 Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
 
 // Edit  produit 
-Route::screen('/product/edit', ProductEditScreen::class)->name('platform.product.edit');
+Route::screen('admin/product/edit/{id}', ProductEditScreen::class)->name('platform.product.edit');
 
 // Clients
-Route::screen('/clients', ClientsScreen::class)
-    ->name('platform.Clients');
+Route::screen('/clients', ClientsScreen::class)->name('platform.Clients');
+
+// Ajouter Clients
+Route::screen('/clients/add', ClientAddScreen::class)->name('platform.Clients.add');
 
 
 

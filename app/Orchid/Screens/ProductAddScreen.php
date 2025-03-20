@@ -2,8 +2,10 @@
 
 namespace App\Orchid\Screens;
 
+use Illuminate\Http\Request;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Actions\Button;
 use Orchid\Support\Facades\Layout;
 use Orchid\Support\Facades\Toast;
@@ -52,28 +54,45 @@ class ProductAddScreen extends Screen
     public function layout(): iterable
     {
     
-            return [
-                Layout::rows([
-                    Input::make('product.name')
-                        ->title('Nom du produit')
-                        ->required(),
-    
-                    Input::make('product.price')
-                        ->title('Prix du produit')
-                        ->type('number')
-                        ->required(),
-                ]),
-            ];
+        return [
+            Layout::rows([
+                Input::make('product.nom')
+                    ->title('Nom du produit')
+                    ->required()
+                    ->placeholder('Entrez le nom du produit'),
+
+                TextArea::make('product.description')
+                    ->title('Description')
+                    ->rows(3)
+                    ->placeholder('Entrez une description (optionnel)'),
+
+                Input::make('product.prix_unitaire')
+                    ->title('Prix unitaire')
+                    ->type('number')
+                    ->step(0.01)
+                    ->required()
+                    ->placeholder('Entrez le prix unitaire'),
+
+                Input::make('product.quantite_stock')
+                    ->title('Quantité en stock')
+                    ->type('number')
+                    ->required()
+                    ->placeholder('Entrez la quantité disponible'),
+            ]),
+        ];
         
     }
 
 
-    public function save($request)
+    public function save(Request $request)
         {
-            Product::create($request->get('product'));
+            // Validation et enregistrement
+            Product::create($request->input('product'));
 
+            // Message de confirmation
             Toast::info('Produit ajouté avec succès.');
 
-            return redirect()->route('platform.product.list');
+            // Redirection vers la liste des produits
+            return redirect()->route('platform.Product');
         }
 }
