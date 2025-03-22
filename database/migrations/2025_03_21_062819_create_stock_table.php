@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table): void {
-            $table->increments('id');
-            $table->string('slug')->unique();
-            $table->string('name');
-            $table->jsonb('permissions')->nullable();
+        Schema::create('stock', function (Blueprint $table) {
+            $table->id('id_stock');
+            $table->unsignedBigInteger('id_product');
+            $table->foreign('id_product')->references('id_product')->on('products');
+            $table->integer('quantite_entre');
+            $table->integer('quantite_sorti');
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('stock');
     }
 };
