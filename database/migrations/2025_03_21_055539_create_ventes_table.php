@@ -13,12 +13,16 @@ return new class extends Migration
             {
                 Schema::create('ventes', function (Blueprint $table) {
                     $table->id('id_vente'); 
-                    $table->integer('id_user'); 
+
+                    $table->unsignedBigInteger('id_user'); 
                     $table->foreign('id_user')->references('id')->on('users');
+
                     $table->unsignedBigInteger('id_client');
-                    $table->foreign('id_client')->references('id_client')->on('clients'); // Clé étrangère correcte
+                    $table->foreign('id_client')->references('id_client')->on('clients'); 
+
                     $table->unsignedBigInteger('id_produit');
-                    $table->foreign('id_produit')->references('id_product')->on('products'); // Correction de la clé étrangère
+                    $table->foreign('id_produit')->references('id_product')->on('products');
+                     
                     $table->timestamps(); 
                 });
             }

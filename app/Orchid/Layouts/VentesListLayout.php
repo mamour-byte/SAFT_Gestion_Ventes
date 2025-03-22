@@ -24,6 +24,8 @@ class VentesListLayout extends Table
      */
     protected function columns(): iterable
     {
-        return [];
+        return [
+            
+        ];
     }
 }
