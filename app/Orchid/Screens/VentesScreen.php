@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Orchid\Screens;
-
+use App\Models\Ventes;
 use Orchid\Screen\Screen;
 
 class VentesScreen extends Screen
@@ -43,6 +43,8 @@ class VentesScreen extends Screen
      */
     public function layout(): iterable
     {
-        return [];
+        return [
+            'ventes' => Ventes::all(),
+        ];
     }
 }

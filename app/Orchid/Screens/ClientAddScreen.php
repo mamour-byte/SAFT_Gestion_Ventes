@@ -4,7 +4,9 @@ namespace App\Orchid\Screens;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Actions\Button;
 use Orchid\Support\Facades\Layout;
-
+use Orchid\Support\Facades\Toast;
+use Illuminate\Http\Request;
+use App\Models\Client;
 use Orchid\Screen\Screen;
 
 class ClientAddScreen extends Screen
@@ -51,27 +53,37 @@ class ClientAddScreen extends Screen
     {
         return [
             Layout::rows([
-                Input::make('clients.nom')
+                Input::make('client.nom')
                     ->title('Nom du Client')
                     ->required()
                     ->placeholder('Entrez le nom du client'),
 
                 Input::make('client.email')
                     ->title('Email')
-                    ->rows(3)
                     ->placeholder('Entrez l email '),
 
-                Input::make('clients.telephone')
+                Input::make('client.telephone')
                     ->title('Telehpone')
                     ->type('number')
-                    ->required()
                     ->placeholder('Entrez le numero de telephone'),
 
-                Input::make('clients.adresse')
+                Input::make('client.adresse')
                     ->title('Adresse')
-                    ->required()
                     ->placeholder('Entrez l Adresse '),
             ]),
         ];
     }
+
+
+    public function save(Request $request)
+        {
+            // Validation et enregistrement
+            Client::create($request->input('client'));
+
+            // Message de confirmation
+            Toast::info('Client ajouté avec succès.');
+
+            // Redirection vers la liste des produits
+            return redirect()->route('platform.clients');
+        }
 }

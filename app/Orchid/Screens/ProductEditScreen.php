@@ -4,7 +4,6 @@ namespace App\Orchid\Screens;
 use Orchid\Screen\Screen;
 use App\Models\Product;
 use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Layouts\Rows;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
 
@@ -18,7 +17,6 @@ class ProductEditScreen extends Screen
     public function query($id): iterable
         {
             $product = Product::find($id);
-            dd($product);
 
             if (!$product) {
                 abort(404, 'Produit non trouvé');
@@ -37,22 +35,22 @@ class ProductEditScreen extends Screen
      * @return \Illuminate\Http\RedirectResponse
      */
         public function save(array $data)
-        {
-            // Récupérer l'ID depuis la route
-            $product = Product::find($data['id']);
-            
-            // Mettre à jour les informations du produit
-            $product->update([
-                'nom' => $data['nom'],
-                'description' => $data['description'],
-                'prix_unitaire' => $data['prix_unitaire'],
-                'quantite_stock' => $data['quantite_stock'],
-            ]);
+            {
+                // Récupérer l'ID depuis la route
+                $product = Product::find($data['id_product']);
+                
+                // Mettre à jour les informations du produit
+                $product->update([
+                    'nom' => $data['nom'],
+                    'description' => $data['description'],
+                    'prix_unitaire' => $data['prix_unitaire'],
+                    'quantite_stock' => $data['quantite_stock'],
+                ]);
 
-            
-            return redirect()->route('platform.product.edit', ['id' => $product->id])
-                ->with('success', 'Le produit a été mis à jour avec succès.');
-        }
+                
+                return redirect()->route('platform.product.edit', ['id_product' => $product->id])
+                    ->with('success', 'Le produit a été mis à jour avec succès.');
+            }
 
 
     /**

@@ -14,6 +14,7 @@ use App\Orchid\Screens\ProductAddScreen;
 use App\Orchid\Screens\ProductEditScreen;
 use App\Orchid\Screens\ClientsScreen;
 use App\Orchid\Screens\ClientAddScreen;
+use App\Orchid\Screens\ClientEditScreen;
 use App\Orchid\Screens\VentesScreen;
 
 /*
@@ -45,9 +46,17 @@ Route::screen('/clients', ClientsScreen::class)->name('platform.clients');
 // Ajouter Clients
 Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add');
 
+// supprimer un Client  
+Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform.clients.delete');
+
+
+// Editer un client 
+Route::screen('/clients/edit/{id}', ClientEditScreen::class)->name('platform.clients.edit');
+
 
 // Platform Ventes 
 Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
+
 
 
 

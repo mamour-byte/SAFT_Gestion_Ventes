@@ -17,7 +17,7 @@ class ClientListLayout extends Table
      *
      * @var string
      */
-    protected $target = 'Client';
+    protected $target = 'clients';
 
     /**
      * Get the table cells to be displayed.
@@ -28,22 +28,31 @@ class ClientListLayout extends Table
     {
         return [
             TD::make('nom', 'Nom')
-                ->render(fn ($product) => $product->nom),
+                ->render(fn ($client) => $client->nom),
 
-            TD::make('email', 'email')
-                ->render(fn ($product) => $product->description),
+            TD::make('email', 'Email')
+                ->render(fn ($client) => $client->email),
 
             TD::make('telephone', 'Telephone')
-                ->render(fn ($product) => number_format($product->prix_unitaire, 2) . ' f CFA'),
+                ->render(fn ($client) => $client->client ),
             
             TD::make('adresse', 'Adresse')
-                ->render(fn ($product) => $product->quantite_stock),
+                ->render(fn ($client) => $client->adresse),
 
-            TD::make('Action')
-                ->render(fn (Client $product) => 
+            TD::make('Editer')
+                ->render(fn (Client $client) => 
                     Link::make()
                         ->icon('pencil')
-                        ->route('platform.client.edit', $product->id)
+                        // ->route('platform.clients.edit', $client->id)
+                ),
+
+            TD::make('Supprimer')
+                ->render(fn (Client $client) => 
+                    Link::make('Supprimer')
+                    ->icon('trash')
+                    ->method('delete')
+                    ->confirm(__('Voulez-vous vraiment supprimer ce client ?'))
+                    ->parameters(['id_client' => $client->id]),
                 ),
             
 

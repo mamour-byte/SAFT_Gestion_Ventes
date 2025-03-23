@@ -9,7 +9,7 @@ use Orchid\Screen\TD;
 class ProductListLayout extends Table
 {
     // La clé 'products' correspond à celle retournée par la méthode query()
-    protected $target = 'products';
+    protected $target = 'product';
 
     protected function columns(): iterable
     {
@@ -30,11 +30,11 @@ class ProductListLayout extends Table
                 ->render(fn ($product) => $product->created_at->format('Y-m-d')),
 
             TD::make('Action')
-                ->render(fn (Product $product) => 
-                    Link::make()
-                        ->icon('pencil')
-                        ->route('platform.product.edit', $product->id)
+                ->render(fn (Product $product) => Link::make()
+                    ->icon('pencil')
+                    // ->route('platform.product.edit',  $product->id) 
                 ),
+            
             
 
         ];

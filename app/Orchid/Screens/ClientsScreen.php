@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Orchid\Screens;
-
+use Orchid\Screen\Actions\Link;
+use App\Models\Client;
+use App\Orchid\Layouts\ClientListLayout;
 use Orchid\Screen\Screen;
 
 class ClientsScreen extends Screen
@@ -12,9 +14,13 @@ class ClientsScreen extends Screen
      * @return array
      */
     public function query(): iterable
-    {
-        return [];
-    }
+        {
+            $clients = Client::paginate(10);
+            return [
+                'clients' => $clients,
+            ];
+        }
+
 
     /**
      * The name of the screen displayed in the header.
@@ -23,7 +29,7 @@ class ClientsScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'ClientsScreen';
+        return 'Liste des Clients';
     }
 
     /**
@@ -33,7 +39,11 @@ class ClientsScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Link::make(__('Add'))
+                    ->icon('bs.plus-circle')
+                    ->route('platform.clients.add'),
+        ];
     }
 
     /**
@@ -43,6 +53,25 @@ class ClientsScreen extends Screen
      */
     public function layout(): iterable
     {
-        return [];
+        return [
+            ClientListLayout::class,
+        ];
     }
+
+
+        /**
+     * Supprime un client.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function delete(int $id)
+        {
+            $client = Client::findOrFail($id);
+
+            $client->delete();
+
+            return redirect()->route('platform.clients.list')
+                ->with('success', 'Le client a été supprimé avec succès.');
+        }
 }
