@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Orchid\Layouts\VentesTabNav;
 use App\Orchid\Screens\PlatformScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
@@ -16,6 +17,7 @@ use App\Orchid\Screens\ClientsScreen;
 use App\Orchid\Screens\ClientAddScreen;
 use App\Orchid\Screens\ClientEditScreen;
 use App\Orchid\Screens\VentesScreen;
+use App\Orchid\Screens\FactureScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +58,20 @@ Route::screen('/clients/edit/{id}', ClientEditScreen::class)->name('platform.cli
 
 // Platform Ventes 
 Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
+
+//Platform Ventes & TabNav
+Route::screen('/ventes', VentesScreen::class)->name('ventes.index');
+
+
+// Plateform Facture 
+Route::screen('/facture', FactureScreen::class)->name('platform.facture');
+
+
+
+
+
+
+
 
 
 

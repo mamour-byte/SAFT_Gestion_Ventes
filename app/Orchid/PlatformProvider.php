@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 namespace App\Orchid;
-
 use Orchid\Platform\Dashboard;
 use Orchid\Platform\ItemPermission;
 use Orchid\Platform\OrchidServiceProvider;
 use Orchid\Screen\Actions\Menu;
-use Orchid\Support\Color;
+use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
 
 class PlatformProvider extends OrchidServiceProvider
 {
@@ -44,6 +44,10 @@ class PlatformProvider extends OrchidServiceProvider
                 ->icon('cash-coin')
                 ->route('platform.ventes'),
 
+            Menu::make('Facture')
+                ->icon('receipt')
+                ->route('platform.facture'),
+
             Menu::make('Product')
                 ->icon('bag-fill')
                 ->route('platform.product'),
@@ -53,7 +57,7 @@ class PlatformProvider extends OrchidServiceProvider
                 ->route('platform.clients'),
 
             Menu::make(__('Users'))
-                ->icon('bs.people')
+                ->icon('person')
                 ->route('platform.systems.users')
                 ->permission('platform.systems.users')
                 ->title(__('Access Controls')),

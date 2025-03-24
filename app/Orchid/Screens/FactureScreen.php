@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Orchid\Screens;
-use App\Orchid\Layouts\Tabs\TabFormulaireLayout;
-use App\Orchid\Layouts\Tabs\TabFormulaireLayout;
+
 use Orchid\Screen\Screen;
 
-class VentesScreen extends Screen
+class FactureScreen extends Screen
 {
     /**
      * Fetch data to be displayed on the screen.
@@ -24,7 +23,7 @@ class VentesScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Ventes';
+        return 'Facture ';
     }
 
     /**
@@ -42,11 +41,8 @@ class VentesScreen extends Screen
      *
      * @return \Orchid\Screen\Layout[]|string[]
      */
-    public function layout(): array
-        {
-            return [
-                TabFormulaireLayout::class,
-                HistoriqueLayout::class,  
-            ];
-        }
+    public function layout(): iterable
+    {
+        return [];
+    }
 }
