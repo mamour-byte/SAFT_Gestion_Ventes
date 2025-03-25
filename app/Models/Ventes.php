@@ -9,7 +9,20 @@ class Ventes extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        ''
-    ];
+    protected $fillable = ['id_utilisateur', 'id_client'];
+
+    public function details()
+    {
+        return $this->hasMany(DetailVente::class);
+    }
+
+    public function utilisateur()
+    {
+        return $this->belongsTo(User::class, 'id_utilisateur');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class, 'id_client');
+    }
 }

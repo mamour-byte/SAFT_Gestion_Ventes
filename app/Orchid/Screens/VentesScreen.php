@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Orchid\Screens;
-use App\Orchid\Layouts\Tabs\TabFormulaireLayout;
-use App\Orchid\Layouts\Tabs\TabFormulaireLayout;
 use Orchid\Screen\Screen;
+use App\Models\Ventes;
+use App\Models\Product;
+use App\Models\Client;
+use App\Orchid\Layouts\TabsNav\NouvVentesRow;
+use App\Orchid\Layouts\TabsNav\HistVentesRow;
 
 class VentesScreen extends Screen
 {
@@ -14,7 +17,12 @@ class VentesScreen extends Screen
      */
     public function query(): iterable
     {
-        return [];
+        return [
+            'clients' => Client::pluck('nom', 'id'),
+            'produits' => Product::all(),
+            'nouvelleVentes' => Ventes::where('status', 'nouvelle')->get(),
+            'historiqueVentes' => Ventes::where('status', 'historique')->get(),
+        ];
     }
 
     /**
@@ -45,8 +53,8 @@ class VentesScreen extends Screen
     public function layout(): array
         {
             return [
-                TabFormulaireLayout::class,
-                HistoriqueLayout::class,  
+                NouvVentesRow::class,
+                HistVentesRow::class,
             ];
         }
 }

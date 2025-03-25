@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Orchid\Layouts\VentesTabNav;
 use App\Orchid\Screens\PlatformScreen;
 use App\Orchid\Screens\User\UserEditScreen;
 use App\Orchid\Screens\User\UserListScreen;
@@ -10,6 +9,8 @@ use App\Orchid\Screens\User\UserProfileScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
+use App\Orchid\Screens\Tabs\HistVentesScreen;
+use App\Orchid\Screens\Tabs\NouvVentesScreen;
 use App\Orchid\Screens\ProductScreen;
 use App\Orchid\Screens\ProductAddScreen;
 use App\Orchid\Screens\ProductEditScreen;
@@ -56,11 +57,15 @@ Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform
 Route::screen('/clients/edit/{id}', ClientEditScreen::class)->name('platform.clients.edit');
 
 
-// Platform Ventes 
-Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
+// Platform Ventes Table de navigation
 
-//Platform Ventes & TabNav
-Route::screen('/ventes', VentesScreen::class)->name('ventes.index');
+// Route::screen('/ventes/nouvelle', NouvVentesScreen::class)->name('platform.ventes.nouvelle');
+
+// Route::screen('/ventes/historique', HistVentesScreen::class)->name('platform.ventes.historique');
+
+
+// Route de Ventes Screen principal
+Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
 
 
 // Plateform Facture 

@@ -4,36 +4,29 @@ namespace App\Orchid\Layouts;
 
 use Orchid\Screen\Actions\Menu;
 use Orchid\Screen\Layouts\TabMenu;
+use Orchid\Support\Facades\Layout;
+use Orchid\Screen\Fields\Input;
 
 class VentesTabNav extends TabMenu
 {
     /**
-     * Définir les onglets de navigation.
+     * Get the menu elements to be displayed.
      *
      * @return Menu[]
      */
     protected function navigations(): iterable
     {
         return [
-            Menu::make('Formulaire')
-                ->route('platform.ventes', ['tab' => 'formulaire'])
-                ->icon('note'),
+            Menu::make('Nouvelle Vente')
+                ->route('platform.ventes.nouvelle'),
 
-            Menu::make('Tableau')
-                ->route('platform.ventes', ['tab' => 'tableau'])
-                ->icon('grid'),
-
-            Menu::make('Historique')
-                ->route('platform.ventes', ['tab' => 'historique'])
-                ->icon('clock'),
+            Menu::make('Historique des Ventes')
+                ->route('platform.ventes.historique'),
         ];
     }
 
-    /**
-     * Onglet actif.
-     */
-    protected function activeTab(): ?string
-    {
-        return request()->get('tab', 'formulaire');
-    }
+   
+
+
+
 }
