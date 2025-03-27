@@ -10,41 +10,39 @@ class HistVentesRow extends Table
     /**
      * Data source.
      *
-     * The name of the key to fetch it from the query.
-     * The results of which will be elements of the table.
-     *
      * @var string
      */
-    protected $target = 'historiqueVentes';
+    protected $target = 'produitsAjoutes'; // Nom de la clé contenant les données
 
     /**
      * Get the table cells to be displayed.
      *
      * @return TD[]
      */
-    protected function columns(): iterable
+    protected function columns(): array
     {
         return [
-            TD::make('id', 'ID')
-                ->sort()
-                ->filter(TD::FILTER_TEXT),
-
-            TD::make('client', 'Client')
-                ->sort()
-                ->filter(TD::FILTER_TEXT),
-
-            TD::make('produit', 'Produit')
-                ->sort(),
+            TD::make('nom', 'Produit')
+                ->render(function ($produit) {
+                    return $produit['nom'];
+                }),
 
             TD::make('quantite', 'Quantité')
-                ->sort(),
+                ->render(function ($produit) {
+                    return $produit['quantite'];
+                }),
+
+            TD::make('prix_unitaire', 'Prix Unitaire')
+                ->render(function ($produit) {
+                    return number_format($produit['prix_unitaire'], 2) . ' €';
+                }),
 
             TD::make('total', 'Total')
-                ->render(fn ($vente) => number_format($vente->total, 2) . ' €'),
-
-            TD::make('date', 'Date')
-                ->sort()
-                ->render(fn ($vente) => $vente->date->format('d/m/Y')),
+                ->render(function ($produit) {
+                    return number_format($produit['quantite'] * $produit['prix_unitaire'], 2) . ' €';
+                }),
         ];
+
+
     }
 }

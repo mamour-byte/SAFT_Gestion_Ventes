@@ -8,9 +8,7 @@ use App\Orchid\Screens\User\UserListScreen;
 use App\Orchid\Screens\User\UserProfileScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
-
-use App\Orchid\Screens\Tabs\HistVentesScreen;
-use App\Orchid\Screens\Tabs\NouvVentesScreen;
+use App\Http\Controllers\VenteController;
 use App\Orchid\Screens\ProductScreen;
 use App\Orchid\Screens\ProductAddScreen;
 use App\Orchid\Screens\ProductEditScreen;
@@ -57,16 +55,13 @@ Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform
 Route::screen('/clients/edit/{id}', ClientEditScreen::class)->name('platform.clients.edit');
 
 
-// Platform Ventes Table de navigation
 
-// Route::screen('/ventes/nouvelle', NouvVentesScreen::class)->name('platform.ventes.nouvelle');
-
-// Route::screen('/ventes/historique', HistVentesScreen::class)->name('platform.ventes.historique');
 
 
 // Route de Ventes Screen principal
 Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
-
+// Route::post('/ventes/add-to-table', [VenteController::class, 'addToTable'])->name('ventes.addToTable');
+// Route::post('/ventes/save', [VenteController::class, 'saveVente'])->name('ventes.save');
 
 // Plateform Facture 
 Route::screen('/facture', FactureScreen::class)->name('platform.facture');

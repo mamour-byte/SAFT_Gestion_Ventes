@@ -2,58 +2,64 @@
 
 namespace App\Orchid\Layouts\TabsNav;
 
+use Orchid\Screen\Layouts\Rows;
 use Orchid\Screen\Fields\CheckBox;
-use Orchid\Screen\Layouts\Table;
-use Orchid\Screen\TD;
-use Orchid\Screen\Layouts\Layout; // Import manquant ajouté
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Fields\Button; // Import manquant ajouté
-use App\Models\Client; 
+use Orchid\Screen\Actions\Button;
+use App\Models\Client;
+use App\Models\Product;
 
-class NouvVentesRow extends Table
+class NouvVentesRow extends Rows
 {
     /**
-     * Data source.
+     * Get the fields elements to be displayed.
      *
-     * The name of the key to fetch it from the query.
-     * The results of which will be elements of the table.
-     *
-     * @var string
+     * @return array
      */
-    protected $target = 'nouvelleVentes';
-
-    /**
-     * Get the table cells to be displayed.
-     *
-     * @return TD[]
-     */
-    protected function columns(): iterable
+    protected function fields(): array
     {
         return [
-            
-                Select::make('id_client')
-                    ->title('Client')
-                    ->options(Client::pluck('nom', 'id'))
+            // Sélection du client
+            Select::make('id_client')
+                ->title('Client')
+                ->options(Client::pluck('nom', 'id_client'))
+                ->required()
+                ->help('Sélectionnez le client pour cette vente.'),
+
+            // Groupe pour les produits et quantités
+            Group::make([
+                Select::make('produits')
+                    ->title('Produits')
+                    ->options(Product::pluck('nom', 'id_product'))
+                    ->multiple() 
+                    ->help('Recherchez et sélectionnez plusieurs produits.')
                     ->required(),
-    
-                Group::make([
-                    Input::make('produits[0][id]')
-                        ->title('Produit ID'),
-                    Input::make('produits[0][quantite]')
-                        ->title('Quantité'),
-                    Input::make('produits[0][prix]')
-                        ->title('Prix Total'),
-                ]),
-    
-                CheckBox::make('status')
-                    ->sendTrueOrFalse()
-                    ->title('TVA'),
-    
-                // Button::make('Enregistrer la vente')
-                //     ->method('saveVente') 
-                //     ->confirm('Voulez-vous vraiment enregistrer cette vente ?'),
+
+                Input::make('produits_quantites')
+                    ->title('Quantités')
+                    ->type('text')
+                    ->help('Entrez les quantités pour chaque produit sélectionné, séparées par des virgules.')
+                    ->required(),
+            ]),
+
+            // Champ pour le total calculé
+            Input::make('total')
+                ->title('Total')
+                ->type('number')
+                ->readonly()
+                ->help('Ce champ sera calculé automatiquement.'),
+
+            // Checkbox pour la TVA
+            CheckBox::make('status')
+                ->sendTrueOrFalse()
+                ->title('TVA')
+                ->help('Cochez si la TVA est applicable.'),
+
+            Button::make('Ajouter au tableau')
+                ->method('addToTable')
+                ->class('btn btn-secondary'),
             
         ];
     }
