@@ -20,8 +20,8 @@ return new class extends Migration
                     $table->unsignedBigInteger('id_client');
                     $table->foreign('id_client')->references('id_client')->on('clients'); 
 
-                    $table->unsignedBigInteger('id_produit');
-                    $table->foreign('id_produit')->references('id_product')->on('products');
+                    $table->unsignedBigInteger('id_product');
+                    $table->foreign('id_product')->references('id_product')->on('products');
                      
                     $table->timestamps(); 
                 });

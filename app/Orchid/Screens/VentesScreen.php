@@ -18,7 +18,7 @@ class VentesScreen extends Screen
     public function query(): iterable
     {
         return [
-            'clients' => Client::pluck('nom', 'id'),
+            'clients' => Client::pluck('nom', 'id_client'),
             'produits' => Product::all(),
             'nouvelleVentes' => Ventes::where('status', 'nouvelle')->get(),
             'historiqueVentes' => Ventes::where('status', 'historique')->get(),

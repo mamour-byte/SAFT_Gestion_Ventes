@@ -9,7 +9,9 @@ class Ventes extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id_utilisateur', 'id_client'];
+    // Clé primaire (si différent de 'id')
+    protected $primaryKey = 'id_vente';
+    protected $fillable = ['id_user', 'id_client'];
 
     public function details()
     {
@@ -18,11 +20,11 @@ class Ventes extends Model
 
     public function utilisateur()
     {
-        return $this->belongsTo(User::class, 'id_utilisateur');
+        return $this->belongsTo(User::class, 'id_user','id');
     }
 
     public function client()
     {
-        return $this->belongsTo(Client::class, 'id_client');
+        return $this->belongsTo(Client::class, 'id_client','id_client');
     }
 }

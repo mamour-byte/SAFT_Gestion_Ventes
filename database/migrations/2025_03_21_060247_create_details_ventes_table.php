@@ -20,6 +20,8 @@ return new class extends Migration
         $table->unsignedBigInteger('id_vente'); 
         $table->foreign('id_vente')->references('id_vente')->on('ventes');
 
+        $table->decimal('prix_total', 10, 2);
+        
         $table->integer('quantite_vendue');
         $table->timestamps();
     });
