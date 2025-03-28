@@ -5,6 +5,7 @@ use App\Models\Client;
 use Orchid\Screen\Screen;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
+use Orchid\Support\Facades\Layout;
 
 class ClientEditScreen extends Screen
 {
@@ -13,14 +14,8 @@ class ClientEditScreen extends Screen
      *
      * @return array
      */
-    public function query($id): iterable
+    public function query(Client $client): iterable
         {
-            $client = Client::find($id);
-
-            if (!$client) {
-                abort(404, 'Client non trouvé');
-            }
-
             return [
                 'client' => $client,
             ];
@@ -84,22 +79,24 @@ class ClientEditScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Input::make('client.nom')
-                        ->title('Nom du Client')
-                        ->required(),
-        
-                    Input::make('client.email')
-                        ->title('Email')
-                        ->required(),
-        
-                    Input::make('client.telephone')
-                        ->title('Telephone')
-                        ->type('number')
-                        ->required(),
-        
-                    Input::make('client.adresse')
-                        ->title('Quantité en stock')
-                        ->required(),
+            Layout::rows([
+                Input::make('client.nom')
+                    ->title('Nom du Client')
+                    ->required(),
+    
+                Input::make('client.email')
+                    ->title('Email')
+                    ->required(),
+    
+                Input::make('client.telephone')
+                    ->title('Telephone')
+                    ->type('number')
+                    ->required(),
+    
+                Input::make('client.adresse')
+                    ->title('Adresse')
+                    ->required(),
+            ]),
         ];
     }
 }

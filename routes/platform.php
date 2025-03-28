@@ -42,7 +42,7 @@ Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.a
 Route::screen('/product/edit/{id}', ProductEditScreen::class)->name('platform.product.edit');
 
 // Platform Clients
-Route::screen('/clients', ClientsScreen::class)->name('platform.clients');
+Route::screen('/clients', ClientEditScreen::class)->name('platform.clients');
 
 // Ajouter Clients
 Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add');
@@ -52,7 +52,7 @@ Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform
 
 
 // Editer un client 
-Route::screen('/clients/edit/{id}', ClientEditScreen::class)->name('platform.clients.edit');
+Route::screen('/clients/edit/{client}', ClientEditScreen::class)->name('platform.clients.edit');
 
 
 

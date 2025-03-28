@@ -43,7 +43,7 @@ class ClientListLayout extends Table
                 ->render(fn (Client $client) => 
                     Link::make()
                         ->icon('pencil')
-                        // ->route('platform.clients.edit', $client->id)
+                        ->route('platform.clients.edit', ['id' => $client->id]) // Ensure 'id' is passed as an array
                 ),
 
             TD::make('Supprimer')

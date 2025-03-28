@@ -43,10 +43,7 @@ class HistVentesRow extends Table
                     return number_format($produit['quantite'] * $produit['prix_unitaire'], 2) . ' €';
                 }),
 
-            // TD::make('tva', 'TVA Incluse')
-            //     ->render(function ($produit) {
-            //         return $produit['tva'];
-            //     }),
+            
         ];
 
 

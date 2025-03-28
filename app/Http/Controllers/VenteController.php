@@ -62,52 +62,57 @@ class VenteController extends Controller
      * Ajouter un produit au tableau.
      */
     public function addToTable(Request $request)
-        {
-            $data = $request->validate([
-                'id_client' => 'required|exists:clients,id_client',
-                'produits' => 'required|array',
-                'produits.*' => 'exists:products,id_product',
-                'produits_quantites' => 'required|string',
-            ]);
+{
+    $data = $request->validate([
+        'id_client' => 'required|exists:clients,id_client',
+        'produits' => 'required|array',
+        'produits.*' => 'exists:products,id_product',
+        'produits_quantites' => 'required|string',
+    ]);
 
-            // Récupérer les produits et leurs quantités
-            $produits = Product::whereIn('id_product', $data['produits'])->get();
-            $quantites = explode(',', $data['produits_quantites']);
+    // Récupérer les produits et leurs quantités
+    $produits = Product::whereIn('id_product', $data['produits'])->get();
+    $quantites = explode(',', $data['produits_quantites']);
 
-            // Charger les produits ajoutés dans la session
-            $produitsAjoutes = session('produitsAjoutes', []);
+    // Charger les produits déjà dans la session
+    $produitsAjoutes = session('produitsAjoutes', []);
 
-            foreach ($produits as $index => $produit) {
-                $quantite = $quantites[$index] ?? 1;
-                $prixUnitaire = $produit->prix;
-                $total = $quantite * $prixUnitaire;
+    foreach ($produits as $index => $produit) {
+        $quantite = isset($quantites[$index]) ? (int) $quantites[$index] : 1;
+        $prixUnitaire = (float) $produit->prix;
+        $total = $quantite * $prixUnitaire;
 
-                // Vérifier si le produit existe déjà dans le tableau
-                $produitExistant = false;
-                foreach ($produitsAjoutes as &$produitAjoute) {
-                    if ($produitAjoute['nom'] === $produit->nom) {
-                        // Mettre à jour la quantité et le total
-                        $produitAjoute['quantite'] += $quantite;
-                        $produitAjoute['total'] = $produitAjoute['quantite'] * $prixUnitaire;
-                        $produitExistant = true;
-                        break;
-                    }
-                }
-
-                // Si le produit n'existe pas, l'ajouter
-                if (!$produitExistant) {
-                    $produitsAjoutes[] = [
-                        'nom' => $produit->nom,
-                        'quantite' => $quantite,
-                        'prix_unitaire' => $prixUnitaire,
-                        'total' => $total,
-                    ];
-                }
+        // Vérifier si le produit existe déjà dans le tableau
+        $produitTrouve = false;
+        foreach ($produitsAjoutes as &$produitAjoute) {
+            if ($produitAjoute['id'] === $produit->id_product) {
+                // Mise à jour de la quantité et recalcul du total
+                $produitAjoute['quantite'] += $quantite;
+                $produitAjoute['total'] = $produitAjoute['quantite'] * $prixUnitaire;
+                $produitTrouve = true;
+                break;
             }
-
-            // Sauvegarder les produits dans la session
-            session(['produitsAjoutes' => $produitsAjoutes]);
-
-            return redirect()->back()->with('success', 'Produits ajoutés ou mis à jour dans le tableau.');
         }
+
+        // Si le produit n'existe pas encore, on l'ajoute
+        if (!$produitTrouve) {
+            $produitsAjoutes[] = [
+                'id' => $produit->id_product,
+                'nom' => $produit->nom,
+                'quantite' => $quantite,
+                'prix_unitaire' => $prixUnitaire,
+                'total' => $total,
+            ];
+        }
+    }
+
+    // Mettre à jour la session
+    session(['produitsAjoutes' => $produitsAjoutes]);
+
+    // Vérifier si la session est bien mise à jour
+    dd(session('produitsAjoutes'));
+
+    return redirect()->back()->with('success', 'Produits ajoutés ou mis à jour dans le tableau.');
+}
+
 }
