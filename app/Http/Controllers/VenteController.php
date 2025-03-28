@@ -78,17 +78,36 @@ class VenteController extends Controller
             $produitsAjoutes = session('produitsAjoutes', []);
 
             foreach ($produits as $index => $produit) {
-                $produitsAjoutes[] = [
-                    'nom' => $produit->nom,
-                    'quantite' => $quantites[$index] ?? 1,
-                    'prix_unitaire' => $produit->prix, // Supposez que chaque produit a un champ `prix`
-                    'total' => ($quantites[$index] ?? 1) * $produit->prix,
-                ];
+                $quantite = $quantites[$index] ?? 1;
+                $prixUnitaire = $produit->prix;
+                $total = $quantite * $prixUnitaire;
+
+                // Vérifier si le produit existe déjà dans le tableau
+                $produitExistant = false;
+                foreach ($produitsAjoutes as &$produitAjoute) {
+                    if ($produitAjoute['nom'] === $produit->nom) {
+                        // Mettre à jour la quantité et le total
+                        $produitAjoute['quantite'] += $quantite;
+                        $produitAjoute['total'] = $produitAjoute['quantite'] * $prixUnitaire;
+                        $produitExistant = true;
+                        break;
+                    }
+                }
+
+                // Si le produit n'existe pas, l'ajouter
+                if (!$produitExistant) {
+                    $produitsAjoutes[] = [
+                        'nom' => $produit->nom,
+                        'quantite' => $quantite,
+                        'prix_unitaire' => $prixUnitaire,
+                        'total' => $total,
+                    ];
+                }
             }
 
             // Sauvegarder les produits dans la session
             session(['produitsAjoutes' => $produitsAjoutes]);
 
-            return redirect()->back()->with('success', 'Produits ajoutés au tableau.');
+            return redirect()->back()->with('success', 'Produits ajoutés ou mis à jour dans le tableau.');
         }
 }

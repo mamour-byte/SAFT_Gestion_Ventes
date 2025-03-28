@@ -4,6 +4,7 @@ namespace App\Orchid\Layouts\TabsNav;
 
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
+use Orchid\Screen\Actions\Button;
 
 class HistVentesRow extends Table
 {
@@ -41,6 +42,11 @@ class HistVentesRow extends Table
                 ->render(function ($produit) {
                     return number_format($produit['quantite'] * $produit['prix_unitaire'], 2) . ' €';
                 }),
+
+            // TD::make('tva', 'TVA Incluse')
+            //     ->render(function ($produit) {
+            //         return $produit['tva'];
+            //     }),
         ];
 
 

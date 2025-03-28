@@ -44,12 +44,6 @@ class NouvVentesRow extends Rows
                     ->required(),
             ]),
 
-            // Champ pour le total calculé
-            Input::make('total')
-                ->title('Total')
-                ->type('number')
-                ->readonly()
-                ->help('Ce champ sera calculé automatiquement.'),
 
             // Checkbox pour la TVA
             CheckBox::make('status')
@@ -58,7 +52,7 @@ class NouvVentesRow extends Rows
                 ->help('Cochez si la TVA est applicable.'),
 
             Button::make('Ajouter au tableau')
-                ->method('addToTable')
+                ->method('ventes.addToTable')
                 ->class('btn btn-secondary'),
             
         ];
