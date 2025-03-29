@@ -6,75 +6,52 @@ use Orchid\Screen\Screen;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
 use Orchid\Support\Facades\Layout;
+use Illuminate\Http\Request;
 
 class ClientEditScreen extends Screen
 {
     /**
+     * @var Client
+     */
+    public $client;
+
+    /**
      * Fetch data to be displayed on the screen.
      *
+     * @param Client $client
      * @return array
      */
-    public function query(Client $client): iterable
-        {
-            return [
-                'client' => $client,
-            ];
-        }
-
-
-       /**
-     * Save the edited product in the database.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function save(array $data)
-        {
-            // Récupérer l'ID depuis la route
-            $client = Client::find($data['id']);
-            
-            // Mettre à jour les informations du produit
-            $client->update([
-                'nom' => $data['nom'],
-                'email' => $data['email'],
-                'telephone' => $data['telephone'],
-                'adresse' => $data['adresse'],
-            ]);
-
-            
-            return redirect()->route('platform.client.edit', ['id' => $client->id])
-                ->with('success', 'Le client a été mis à jour avec succès.');
-        }
-
-
+    public function query(Client $client): array
+    {
+        $this->client = $client;
+        
+        return [
+            'client' => $this->client
+        ];
+    }
 
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
-        return 'Editer un Client ';
+        return 'Editer un Client';
     }
 
     /**
      * The screen's action buttons.
-     *
-     * @return \Orchid\Screen\Action[]
      */
     public function commandBar(): iterable
-        {
-            return [
-                Button::make('Enregistrer')
-                        ->method('save'),
-            ];
-        }
+    {
+        return [
+            Button::make('Enregistrer')
+                ->icon('bs.check-circle')
+                ->method('save'),
+        ];
+    }
 
     /**
      * The screen's layout elements.
-     *
-     * @return \Orchid\Screen\Layout[]|string[]
      */
     public function layout(): iterable
     {
@@ -89,8 +66,8 @@ class ClientEditScreen extends Screen
                     ->required(),
     
                 Input::make('client.telephone')
-                    ->title('Telephone')
-                    ->type('number')
+                    ->title('Téléphone')
+                    ->mask('(+221) 99-999-99-99')
                     ->required(),
     
                 Input::make('client.adresse')
@@ -98,5 +75,23 @@ class ClientEditScreen extends Screen
                     ->required(),
             ]),
         ];
+    }
+
+    /**
+     * Save the client.
+     */
+    public function save(Client $client, Request $request)
+    {
+        $request->validate([
+            'client.nom' => 'required',
+            'client.email' => 'required|email',
+            'client.telephone' => 'required',
+            'client.adresse' => 'required',
+        ]);
+
+        $client->update($request->input('client'));
+
+        return redirect()->route('platform.clients')
+            ->with('success', 'Client mis à jour avec succès');
     }
 }

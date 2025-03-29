@@ -65,6 +65,7 @@ class ClientAddScreen extends Screen
                 Input::make('client.telephone')
                     ->title('Telehpone')
                     ->type('number')
+                    ->mask('(+221) 99-999-99-99')
                     ->placeholder('Entrez le numero de telephone'),
 
                 Input::make('client.adresse')

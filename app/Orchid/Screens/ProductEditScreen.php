@@ -1,110 +1,118 @@
 <?php
 
 namespace App\Orchid\Screens;
-use Orchid\Screen\Screen;
+
 use App\Models\Product;
+use Orchid\Screen\Screen;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
+use Orchid\Support\Facades\Layout;
+use Illuminate\Http\Request;
 
 class ProductEditScreen extends Screen
 {
     /**
+     * @var Product
+     */
+    public $product;
+
+    /**
      * Fetch data to be displayed on the screen.
      *
+     * @param Product $product
      * @return array
      */
-    public function query($id): iterable
+    public function query(?Product $product): array
         {
-            $product = Product::find($id);
-
-            if (!$product) {
-                abort(404, 'Produit non trouvé');
-            }
-
+            $this->product = $product ?? new Product();
+            
             return [
-                'product' => $product,
+                'product' => $this->product
             ];
         }
 
-
-        /**
-     * Save the edited product in the database.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Http\RedirectResponse
-     */
-        public function save(array $data)
-            {
-                // Récupérer l'ID depuis la route
-                $product = Product::find($data['id_product']);
-                
-                // Mettre à jour les informations du produit
-                $product->update([
-                    'nom' => $data['nom'],
-                    'description' => $data['description'],
-                    'prix_unitaire' => $data['prix_unitaire'],
-                    'quantite_stock' => $data['quantite_stock'],
-                ]);
-
-                
-                return redirect()->route('platform.product.edit', ['id_product' => $product->id])
-                    ->with('success', 'Le produit a été mis à jour avec succès.');
-            }
-
-
     /**
      * The name of the screen displayed in the header.
-     *
-     * @return string|null
      */
     public function name(): ?string
     {
-        return 'ProductEditScreen';
+        return "Éditer le produit : {$this->product->nom}";
     }
 
     /**
      * The screen's action buttons.
-     *
-     * @return \Orchid\Screen\Action[]
      */
     public function commandBar(): iterable
     {
         return [
             Button::make('Enregistrer')
-                    ->method('save'),
+                ->icon('bs.check-circle')
+                ->method('save'),
+                
+            Button::make('Supprimer')
+                ->icon('bs.trash')
+                ->method('remove')
+                ->confirm('Êtes-vous sûr de vouloir supprimer ce produit?'),
         ];
     }
 
     /**
      * The screen's layout elements.
-     *
-     * @return \Orchid\Screen\Layout[]|string[]
      */
     public function layout(): iterable
     {
         return [
-
-                    Input::make('product.nom')
-                        ->title('Nom du produit')
-                        ->required(),
-        
-                    TextArea::make('product.description')
-                        ->title('Description')
-                        ->rows(4)
-                        ->required(),
-        
-                    Input::make('product.prix_unitaire')
-                        ->title('Prix unitaire')
-                        ->type('number')
-                        ->required(),
-        
-                    Input::make('product.quantite_stock')
-                        ->title('Quantité en stock')
-                        ->type('number')
-                        ->required(),
-                
-            
+            Layout::rows([
+                Input::make('product.nom')
+                    ->title('Nom du produit')
+                    ->required(),
+    
+                TextArea::make('product.description')
+                    ->title('Description')
+                    ->rows(4)
+                    ->required(),
+    
+                Input::make('product.prix_unitaire')
+                    ->title('Prix unitaire')
+                    ->type('number')
+                    ->step('0.01')
+                    ->required(),
+    
+                Input::make('product.quantite_stock')
+                    ->title('Quantité en stock')
+                    ->type('number')
+                    ->required(),
+            ]),
         ];
+    }
+
+    /**
+     * Save the product.
+     */
+    public function save(Product $product, Request $request)
+    {
+        $request->validate([
+            'product.nom' => 'required|string|max:255',
+            'product.description' => 'required|string',
+            'product.prix_unitaire' => 'required|numeric|min:0',
+            'product.quantite_stock' => 'required|integer|min:0',
+        ]);
+
+        $product->update($request->input('product'));
+
+        return redirect()->route('platform.product')
+            ->with('success', 'Produit mis à jour avec succès');
+    }
+
+    /**
+     * Remove the product.
+     */
+    public function remove(Product $product)
+    {
+        $product->delete();
+        
+        return redirect()->route('platform.products.list')
+            ->with('success', 'Produit supprimé avec succès');
     }
 }

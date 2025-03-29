@@ -27,6 +27,7 @@ class ClientListLayout extends Table
     protected function columns(): iterable
     {
         return [
+
             TD::make('nom', 'Nom')
                 ->render(fn ($client) => $client->nom),
 
@@ -34,28 +35,29 @@ class ClientListLayout extends Table
                 ->render(fn ($client) => $client->email),
 
             TD::make('telephone', 'Telephone')
-                ->render(fn ($client) => $client->client ),
+            ->render(fn ($client) => $client->telephone),
             
             TD::make('adresse', 'Adresse')
                 ->render(fn ($client) => $client->adresse),
 
             TD::make('Editer')
-                ->render(fn (Client $client) => 
-                    Link::make()
-                        ->icon('pencil')
-                        ->route('platform.clients.edit', ['id' => $client->id]) // Ensure 'id' is passed as an array
+                ->render(fn (Client $client) =>         
+                Link::make()
+                    ->icon('pencil')
+                    ->route('platform.clients.edit',  $client->id_client)                      
                 ),
 
             TD::make('Supprimer')
                 ->render(fn (Client $client) => 
-                    Link::make('Supprimer')
+                    Link::make()
                     ->icon('trash')
                     ->method('delete')
                     ->confirm(__('Voulez-vous vraiment supprimer ce client ?'))
-                    ->parameters(['id_client' => $client->id]),
+                    ->parameters( $client->id_client),
                 ),
             
 
         ];
     }
+
 }

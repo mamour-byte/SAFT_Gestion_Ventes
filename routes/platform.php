@@ -28,47 +28,39 @@ use App\Orchid\Screens\FactureScreen;
 | contains the need "dashboard" middleware group. Now create something great!
 |
 */
-// Platform Accueil
-Route::screen('/main', PlatformScreen::class)
-    ->name('platform.main');
+// ----------------- Platform Accueil ---------------------
+Route::screen('/main', PlatformScreen::class)->name('platform.main');
 
-// Platform Produit
+
+// ------------------Platform Produit------------------------
 Route::screen('/product', ProductScreen::class)->name('platform.product');
-
 // Ajouter produit 
 Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
-
 // Edit  produit 
-Route::screen('/product/edit/{id}', ProductEditScreen::class)->name('platform.product.edit');
+Route::screen('product/edit/{product}', ProductEditScreen::class)->name('platform.product.edit');
 
-// Platform Clients
-Route::screen('/clients', ClientEditScreen::class)->name('platform.clients');
 
+
+// --------------- Platform Clients ----------------
+
+Route::screen('/clients', ClientsScreen::class)->name('platform.clients');
 // Ajouter Clients
 Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add');
-
 // supprimer un Client  
 Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform.clients.delete');
-
-
 // Editer un client 
-Route::screen('/clients/edit/{client}', ClientEditScreen::class)->name('platform.clients.edit');
+Route::screen('clients/edit/{client}', ClientEditScreen::class)->name('platform.clients.edit');
 
 
 
-
-
-// Route de Ventes Screen principal
+// -------------------------Plateform ventes-------------------------
 Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
-// Route::post('/ventes/add-to-table', [VenteController::class, 'addToTable'])->name('ventes.addToTable');
-// Route::post('/ventes/save', [VenteController::class, 'saveVente'])->name('ventes.save');
 
-// Plateform Facture 
+
+
+
+// -----------------Plateform Facture ----------------------------
 Route::screen('/facture', FactureScreen::class)->name('platform.facture');
-
-
-
-
 
 
 

@@ -21,18 +21,23 @@ class ProductListLayout extends Table
                 ->render(fn ($product) => $product->description),
 
             TD::make('prix_unitaire', 'Prix Unitaire')
-                ->render(fn ($product) => number_format($product->prix_unitaire, 2) . ' f CFA'),
+                ->render(fn ($product) => number_format($product->prix_unitaire, ) . ' F CFA'),
             
             TD::make('quantite_stock', 'Quantité en Stock')
-                ->render(fn ($product) => $product->quantite_stock),
-            
-            TD::make('created_at', 'Date de Création')
-                ->render(fn ($product) => $product->created_at->format('Y-m-d')),
+                ->render(fn ($product) => $product->quantite_stock),       
 
-            TD::make('Action')
+            TD::make('Modifier')
                 ->render(fn (Product $product) => Link::make()
                     ->icon('pencil')
-                    // ->route('platform.product.edit',  $product->id) 
+                    ->route('platform.product.edit',  $product->id_product) 
+                ),
+
+            TD::make('Supprimer')
+                ->render(fn (Product $product) => Link::make()
+                    ->icon('trash')
+                    ->method('delete')
+                    ->confirm(__('Voulez-vous vraiment supprimer ce produit ?'))
+                    ->parameters(['id' => $product->id]),
                 ),
             
             
