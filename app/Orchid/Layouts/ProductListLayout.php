@@ -5,6 +5,7 @@ use Orchid\Screen\Actions\Link;
 use App\Models\Product;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
+use Orchid\Screen\Actions\Button;
 
 class ProductListLayout extends Table
 {
@@ -29,16 +30,15 @@ class ProductListLayout extends Table
             TD::make('Modifier')
                 ->render(fn (Product $product) => Link::make()
                     ->icon('pencil')
-                    ->route('platform.product.edit',  $product->id_product) 
-                ),
+                    ->route('platform.product.edit', $product)),
 
             TD::make('Supprimer')
-                ->render(fn (Product $product) => Link::make()
+                ->render(fn (Product $product) => Button::make()
                     ->icon('trash')
                     ->method('delete')
-                    ->confirm(__('Voulez-vous vraiment supprimer ce produit ?'))
-                    ->parameters(['id' => $product->id]),
-                ),
+                    ->route('platform.product.delete', $product)
+                    ->confirm('Voulez-vous vraiment supprimer ce produit ?')
+                    ),
             
             
 

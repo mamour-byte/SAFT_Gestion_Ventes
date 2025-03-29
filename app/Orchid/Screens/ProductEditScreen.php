@@ -107,12 +107,17 @@ class ProductEditScreen extends Screen
 
     /**
      * Remove the product.
+     * @param Product $product
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function remove(Product $product)
-    {
-        $product->delete();
-        
-        return redirect()->route('platform.products.list')
-            ->with('success', 'Produit supprimé avec succès');
-    }
+    public function remove(Product $product): \Illuminate\Http\RedirectResponse
+        {
+            $product->delete();
+            
+            return redirect()->route('platform.product.list')
+                ->with('success', 'Produit supprimé avec succès');
+        }
+
+    
+    
 }

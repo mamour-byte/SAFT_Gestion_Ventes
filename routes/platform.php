@@ -38,7 +38,8 @@ Route::screen('/product', ProductScreen::class)->name('platform.product');
 Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
 // Edit  produit 
 Route::screen('product/edit/{product}', ProductEditScreen::class)->name('platform.product.edit');
-
+// supprimer un Produit
+Route::delete('product/{product}', [ProductEditScreen::class, 'remove'])->name('platform.product.delete');
 
 
 // --------------- Platform Clients ----------------
