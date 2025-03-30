@@ -2,65 +2,55 @@
 
 namespace App\Orchid\Screens;
 
-use Orchid\Screen\Screen;
-use Illuminate\Http\Request;
+use App\Http\Controllers\VenteController;
 use App\Orchid\Layouts\TabsNav\NouvVentesRow;
 use App\Orchid\Layouts\TabsNav\HistVentesRow;
+use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Layout;
+use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
-use App\Models\Product;
 
 class VentesScreen extends Screen
 {
-    /**
-     * Query data.
-     *
-     * @return array
-     */
-    public function query(): array
+    public function query()
+    {
+        return [
+            'ventesSession' => session()->get('ventes_temp', []),
+        ];
+    }
+
+    public function name(): string
+    {
+        return 'Gestion des Ventes';
+    }
+
+    public function layout(): array
         {
-            $produitsAjoutes = session('produitsAjoutes', []); 
             return [
-                'produitsAjoutes' => $produitsAjoutes,
+                Layout::tabs([
+                    'Nouvelle Vente' => [
+                        NouvVentesRow::class,
+                    ],
+                    'Historique' => [
+                        HistVentesRow::class,
+                    ],
+                ]),
             ];
         }
 
-    /**
-     * Display screen name.
-     *
-     * @return string
-     */
-    public function name(): string
+
+    public function addToVentesTable(Request $request)
     {
-        return 'Nouvelle Vente';
+        return (new VenteController)->addToVentesTable($request);
     }
 
-    /**
-     * Button commands.
-     *
-     * @return array
-     */
-    public function commandBar(): array
-    
+    public function removeFromVentesTable(Request $request)
     {
-    return [
-
-        Button::make('Enregistrer la vente')
-            ->route('ventes.save') 
-            ->class('btn btn-primary'),
-        ];
+        return (new VenteController)->removeFromVentesTable($request);
     }
 
-    /**
-     * Views.
-     *
-     * @return array
-     */
-    public function layout(): array
+    public function saveVentes(Request $request)
     {
-        return [
-            NouvVentesRow::class,
-            HistVentesRow::class,
-        ];
+        return (new VenteController)->saveVentes($request);
     }
-   
 }

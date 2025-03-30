@@ -59,19 +59,5 @@ class ClientsScreen extends Screen
     }
 
 
-        /**
-     * Supprime un client.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function delete(int $id)
-        {
-            $client = Client::findOrFail($id);
-
-            $client->delete();
-
-            return redirect()->route('platform.clients.list')
-                ->with('success', 'Le client a été supprimé avec succès.');
-        }
+    
 }

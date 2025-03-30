@@ -2,117 +2,132 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Client;
+use App\Models\Product;
 use App\Models\Ventes;
 use App\Models\DetailVente;
-use App\Models\Product;
-use Orchid\Support\Facades\Toast;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Orchid\Screen\Actions\Button;
 
 class VenteController extends Controller
-    {
-        public function saveVente(Request $request)
+{
+    public function addToVentesTable(Request $request)
         {
-            // Valider les données
+            // Valider la structure de base
             $request->validate([
-                'id_client' => 'required|exists:clients,id',
-                'produits' => 'required|array',
-                'produits.*.id' => 'required|exists:produits,id_product',
-                'produits.*.quantite' => 'required|integer|min:1',
-                'produits.*.prix' => 'required|numeric|min:0',
-                'status' => 'nullable|boolean',
+                'vente.id_client' => 'required|exists:clients,id_client',
+                'vente.produits' => 'required|array',
+                'vente.produits.*' => 'exists:products,id_product',
+                'vente.quantites' => 'required|string',
+                'vente.tva' => 'nullable|boolean',
             ]);
+        
+            $venteData = $request->input('vente');
+            $quantites = array_map('intval', explode(',', $venteData['quantites']));
+        
+            // Vérification que le nombre de produits = nombre de quantités
+            if (count($venteData['produits']) !== count($quantites)) {
+                return redirect()->back()
+                       ->with('error', 'Le nombre de produits doit correspondre au nombre de quantités')
+                       ->withInput();
+            }
 
-            // Créer la vente
-            $vente = Ventes::create([
-                // 'id_user' => auth()->id(),
-                'id_client' => $request->id_client,
-            ]);
+            // Validation supplémentaire
+            if (empty($venteData['produits']) || count($venteData['produits']) !== count($quantites)) {
+                return back()->with('error', 'Nombre de produits et quantités incompatible');
+            }
 
-            // Insérer les détails de la vente
-            foreach ($request->produits as $produit) {
-                $prixTotal = $produit['prix'] * $produit['quantite'];
-
-                // Ajouter la TVA si cochée
-                if ($request->status) {
-                    $prixTotal += $prixTotal * 0.18; // Ajoute 18% de TVA
+            // Construction du tableau de produits
+            $produitsDetails = [];
+            foreach ($venteData['produits'] as $index => $idProduct) {
+                $product = Product::find($idProduct);
+                if (!$product) {
+                    return back()->with('error', "Produit ID $idProduct introuvable");
                 }
 
-                DetailVente::create([
-                    'id_vente' => $vente->id_vente,
-                    'id_produit' => $produit['id'],
-                    'quantite_vendue' => $produit['quantite'],
-                    'prix_total' => $prixTotal,
-                ]);
-
-                // Mettre à jour le stock
-                $produitModel = Product::find($produit['id']);
-                $produitModel->decrement('quantite_stock', $produit['quantite']);
+                $produitsDetails[] = [
+                    'id_product' => $product->id_product,
+                    'nom' => $product->nom,
+                    'quantite' => $quantites[$index] ?? 0,
+                    'prix_unitaire' => $product->prix_unitaire,
+                ];
             }
 
-            // Afficher un message de succès
-            Toast::info('Vente enregistrée avec succès, TVA incluse si applicable !');
-
-            return response()->json(['message' => 'Vente enregistrée avec succès']);
-        }
-
-
-
-
-        /**
-     * Ajouter un produit au tableau.
-     */
-    public function addToTable(Request $request)
-{
-    $data = $request->validate([
-        'id_client' => 'required|exists:clients,id_client',
-        'produits' => 'required|array',
-        'produits.*' => 'exists:products,id_product',
-        'produits_quantites' => 'required|string',
-    ]);
-
-    // Récupérer les produits et leurs quantités
-    $produits = Product::whereIn('id_product', $data['produits'])->get();
-    $quantites = explode(',', $data['produits_quantites']);
-
-    // Charger les produits déjà dans la session
-    $produitsAjoutes = session('produitsAjoutes', []);
-
-    foreach ($produits as $index => $produit) {
-        $quantite = isset($quantites[$index]) ? (int) $quantites[$index] : 1;
-        $prixUnitaire = (float) $produit->prix;
-        $total = $quantite * $prixUnitaire;
-
-        // Vérifier si le produit existe déjà dans le tableau
-        $produitTrouve = false;
-        foreach ($produitsAjoutes as &$produitAjoute) {
-            if ($produitAjoute['id'] === $produit->id_product) {
-                // Mise à jour de la quantité et recalcul du total
-                $produitAjoute['quantite'] += $quantite;
-                $produitAjoute['total'] = $produitAjoute['quantite'] * $prixUnitaire;
-                $produitTrouve = true;
-                break;
-            }
-        }
-
-        // Si le produit n'existe pas encore, on l'ajoute
-        if (!$produitTrouve) {
-            $produitsAjoutes[] = [
-                'id' => $produit->id_product,
-                'nom' => $produit->nom,
-                'quantite' => $quantite,
-                'prix_unitaire' => $prixUnitaire,
-                'total' => $total,
+            // Stockage en session
+            $ventes = session()->get('ventes_temp', []);
+            $ventes[] = [
+                'id_client' => $venteData['id_client'],
+                'produits' => $produitsDetails,
+                'tva' => $venteData['tva'] ?? false,
             ];
+            
+            session()->put('ventes_temp', $ventes);
+
+            return redirect()->back()->with('success', 'Vente ajoutée');
         }
+
+
+
+
+    public function removeFromVentesTable(Request $request)
+    {
+        $index = $request->validate(['index' => 'required|integer',]);
+        $ventes = session()->get('ventes_temp', []);
+        
+        if (!isset($ventes[$index])) {
+            return back()->with('error', 'Vente introuvable');
+        }
+        
+        unset($ventes[$index]);
+        session()->put('ventes_temp', array_values($ventes));
+        
+        return redirect()->back()->with('success', 'Vente supprimée du tableau temporaire');
     }
 
-    // Mettre à jour la session
-    session(['produitsAjoutes' => $produitsAjoutes]);
+    public function saveVentes(Request $request)
+    {
+        $ventes = session()->get('ventes_temp', []);
+        
+        if (empty($ventes)) {
+            return back()->with('error', 'Aucune vente à enregistrer');
+        }
 
-    // Vérifier si la session est bien mise à jour
-    dd(session('produitsAjoutes'));
+        try {
+            DB::beginTransaction();
+            
+            foreach ($ventes as $vente) {
+                // Création de la vente principale
+                $newVente = Ventes::create([
+                    'id_client' => $vente['id_client'],
+                    'id_user' => $request->user()->id , // 'id_user' => auth()->id(),
+                    'date_vente' => now(),
+                ]);
 
-    return redirect()->back()->with('success', 'Produits ajoutés ou mis à jour dans le tableau.');
-}
+                // Ajout des détails de vente
+                foreach ($vente['produits'] as $produit) {
+                    DetailVente::create([
+                        'id_vente' => $newVente->id_vente,
+                        'id_product' => $produit['id_product'],
+                        'quantite_vendue' => $produit['quantite_vendue'],
+                        'prix_total' => $produit['prix_total'],
+                    ]);
 
+                    // Mise à jour du stock
+                    $product = Product::find($produit['id_product']);
+                    $product->quantite_stock -= $produit['quantite_vendue'];
+                    $product->save();
+                }
+            }
+            
+            DB::commit();
+            session()->forget('ventes_temp');
+            
+            return redirect()->back()->with('success', count($ventes) . ' ventes enregistrées avec succès!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Erreur lors de l\'enregistrement: ' . $e->getMessage());
+        }
+    }
 }

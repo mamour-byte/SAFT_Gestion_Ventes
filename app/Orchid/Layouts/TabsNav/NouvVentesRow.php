@@ -13,48 +13,39 @@ use App\Models\Product;
 
 class NouvVentesRow extends Rows
 {
-    /**
-     * Get the fields elements to be displayed.
-     *
-     * @return array
-     */
     protected function fields(): array
     {
         return [
-            // Sélection du client
-            Select::make('id_client')
+            Select::make('vente.id_client')
                 ->title('Client')
                 ->options(Client::pluck('nom', 'id_client'))
                 ->required()
-                ->help('Sélectionnez le client pour cette vente.'),
-
-            // Groupe pour les produits et quantités
+                ->help('Sélectionnez le client'),
+                
             Group::make([
-                Select::make('produits')
+                Select::make('vente.produits')  // Retirez les crochets []
                     ->title('Produits')
-                    ->options(Product::pluck('nom', 'id_product'))
-                    ->multiple() 
-                    ->help('Recherchez et sélectionnez plusieurs produits.')
-                    ->required(),
-
-                Input::make('produits_quantites')
+                    ->options(Product::where('quantite_stock', '>', 0)->pluck('nom', 'id_product'))
+                    ->multiple()
+                    ->required()
+                    ->help('Sélectionnez les produits (Ctrl+clic pour multiple)'),
+                    
+                Input::make('vente.quantites')
                     ->title('Quantités')
                     ->type('text')
-                    ->help('Entrez les quantités pour chaque produit sélectionné, séparées par des virgules.')
-                    ->required(),
+                    ->required()
+                    ->help('Format: 1,2,3 (une quantité par produit)'),
             ]),
-
-
-            // Checkbox pour la TVA
-            CheckBox::make('status')
-                ->sendTrueOrFalse()
-                ->title('TVA')
-                ->help('Cochez si la TVA est applicable.'),
-
-            Button::make('Ajouter au tableau')
-                ->method('ventes.addToTable')
-                ->class('btn btn-secondary'),
             
+            CheckBox::make('vente.tva')
+                ->sendTrueOrFalse()
+                ->title('TVA Applicable (18%)')
+                ->value(true),
+                
+            Button::make('Ajouter au tableau')
+                ->method('addToVentesTable')
+                ->class('btn btn-primary')
+                ->confirm('Confirmez l\'ajout au tableau?'),
         ];
     }
 }
