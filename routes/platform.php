@@ -105,7 +105,6 @@ Route::screen('/ventes', VentesScreen::class)->name('platform.ventes')
         ->parent('platform.index')
         ->push('Ventes', route('platform.ventes'));
 });
-// Ajouter une vente
 
 
 

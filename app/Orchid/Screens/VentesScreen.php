@@ -9,15 +9,16 @@ use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
 use Orchid\Screen\Actions\Button;
+use App\Models\Ventes;
 
 class VentesScreen extends Screen
 {
     public function query()
-    {
-        return [
-            'ventesSession' => session()->get('ventes_temp', []),
-        ];
-    }
+        {
+            return [
+                'ventes' => Ventes::with(['client', 'details.product'])->latest()->get(),
+            ];
+        }
 
     public function name(): string
     {
@@ -41,6 +42,7 @@ class VentesScreen extends Screen
 
     public function addToVentesTable(Request $request)
     {
+        // dd('Orchid reçoit bien la requête !', $request->all());
         return (new VenteController)->addToVentesTable($request);
     }
 

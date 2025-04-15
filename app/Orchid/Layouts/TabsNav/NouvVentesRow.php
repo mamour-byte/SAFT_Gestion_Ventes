@@ -23,7 +23,7 @@ class NouvVentesRow extends Rows
                 ->help('Sélectionnez le client'),
                 
             Group::make([
-                Select::make('vente.produits')  // Retirez les crochets []
+                Select::make('vente.produits')   
                     ->title('Produits')
                     ->options(Product::where('quantite_stock', '>', 0)->pluck('nom', 'id_product'))
                     ->multiple()
@@ -37,15 +37,27 @@ class NouvVentesRow extends Rows
                     ->help('Format: 1,2,3 (une quantité par produit)'),
             ]),
             
+            
+            Select::make('vente.type_document')
+                ->title('Type de document')
+                ->options([
+                    'devis' => 'Devis',
+                    'facture' => 'Facture',
+                    'avoir' => 'Avoir',
+                ])
+                ->required()
+                ->help('Choisissez le type de document'),
+
             CheckBox::make('vente.tva')
                 ->sendTrueOrFalse()
                 ->title('TVA Applicable (18%)')
                 ->value(true),
                 
-            Button::make('Ajouter au tableau')
+            Button::make('Nouvelle Vente')
                 ->method('addToVentesTable')
-                ->class('btn btn-primary')
-                ->confirm('Confirmez l\'ajout au tableau?'),
+                ->confirm('Confirmez l\'ajout au tableau?')
+                ->class('btn btn-primary'),
+            
         ];
     }
 }
