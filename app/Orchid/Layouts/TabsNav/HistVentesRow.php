@@ -11,7 +11,6 @@ class HistVentesRow extends Table
     protected $target = 'ventes';
 
 
-
     protected function columns(): array
     {
         return [
@@ -27,32 +26,39 @@ class HistVentesRow extends Table
                         return $produit['nom'] . ' (x' . $produit['quantite'] . ') - ' . number_format($produit['prix_unitaire'] ) . 'f cfa';
                     })->implode('<br>');
                 }),
+                       
                 
-            TD::make('total', 'Total')
+            TD::make('type_document', 'Type')
+                    ->render(function ($vente) {
+                        return isset($vente['type_document']) ? ucfirst($vente['type_document']) : '—';
+                    }),            
+            
+                    
+            TD::make('numero_facture', 'N° Document')
+                ->render(function ($item) {
+                    return $item['numero_facture'] ?? '—';
+                }),
+            
+            TD::make('date_livraison', 'TVA Applicable')
+                ->render(function ($item) {
+                    return isset($item['tva']) && $item['tva'] ? 'Oui' : 'Non';
+                }),
+
+            TD::make('total', 'Total HT')
                 ->render(function ($item) {
                     $total = collect($item['produits'])->sum(function ($produit) {
                         return $produit['quantite'] * $produit['prix_unitaire'];
                     });
                     return number_format($total ) . 'f cfa';
                 }),
-                       
-                
-            TD::make('type_document', 'Type')
-                    ->render(function ($vente) {
-                        return isset($vente['type_document']) ? ucfirst($vente['type_document']) : '—';
-                    }),
             
-            
-            
-            TD::make('numero_facture', 'N° Document')
+            TD::make('total', 'Total TTC')
                 ->render(function ($item) {
-                    return $item['numero_facture'] ?? '—';
+                    $total = collect($item['produits'])->sum(function ($produit) {
+                        return $produit['quantite'] * $produit['prix_unitaire']* 1.18;
+                    });
+                    return number_format($total ) . 'f cfa';
                 }),
-            
-            // TD::make('date_livraison', 'Date livraison')
-            //     ->render(function ($item) {
-            //         return isset($item['date_livraison']) ? \Carbon\Carbon::parse($item['date_livraison'])->format('d/m/Y') : '—';
-            //     }),
 
                 
             TD::make('actions', 'Actions')
@@ -75,14 +81,15 @@ class HistVentesRow extends Table
                         ->render();
             
                     // Transformer un devis en facture
-                    if (($item['type_document'] ?? '') === 'devis') {
+                    if (in_array($item['type_document'] ?? '', ['devis', 'avoir'])) {
                         $buttons[] = Button::make('Transformer en facture')
                             ->method('transformQuoteToInvoice')
                             ->parameters(['index' => $key])
                             ->class('btn btn-primary btn-sm')
-                            ->confirm('Confirmer la transformation de ce devis en facture ?')
+                            ->confirm('Confirmer la transformation de ce document en facture ?')
                             ->render();
                     }
+                    
             
                     // Générer le PDF
                     $buttons[] = Button::make('Télécharger PDF')
@@ -90,6 +97,7 @@ class HistVentesRow extends Table
                         ->parameters(['index' => $key])
                         ->class('btn btn-info btn-sm')
                         ->render();
+
             
                     return implode(' ', $buttons);
                 }),

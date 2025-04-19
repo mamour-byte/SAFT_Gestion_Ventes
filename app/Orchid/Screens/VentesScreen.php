@@ -5,29 +5,46 @@ namespace App\Orchid\Screens;
 use App\Http\Controllers\VenteController;
 use App\Orchid\Layouts\TabsNav\NouvVentesRow;
 use App\Orchid\Layouts\TabsNav\HistVentesRow;
+use App\Orchid\Layouts\TabsNav\DevisTable;
+use App\Orchid\Layouts\TabsNav\FactureTable;
+use App\Orchid\Layouts\TabsNav\AvoirTable;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
-use Orchid\Screen\Actions\Button;
 use App\Models\Ventes;
 
 class VentesScreen extends Screen
 {
-    public function query()
+    private const DOCUMENT_TYPES = [
+        'devis' => 'devis',
+        'facture' => 'facture',
+        'avoir' => 'avoir'
+    ];
+
+    public function name(): string
         {
-            $ventes = \App\Models\Ventes::with(['client', 'details.product', 'facture'])->latest()->get();
+            return 'Gestion des Ventes';
+        }
+
+    public function query(): array
+        {
+            $ventes = Ventes::with(['client', 'details.product', 'facture'])
+                ->latest()
+                ->get();
 
             $formatted = $ventes->map(function ($vente) {
                 return [
+                    'id' => $vente->id, 
                     'id_client' => $vente->id_client,
+                    'client_nom' => $vente->client->nom ?? 'Client inconnu',
                     'produits' => $vente->details->map(function ($detail) {
                         return [
                             'nom' => $detail->product->nom ?? 'Produit inconnu',
-                            'quantite' => $detail->quantite_vendue,
+                            'quantite' => $detail->quantite_vendue ?? 0,
                             'prix_unitaire' => $detail->product->prix_unitaire ?? 0,
                         ];
-                    }),
-                    'type_document' => $vente->facture->type_document ?? 'facture',
+                    })->values()->all(),
+                    'type_document' => $vente->facture->type_document ?? self::DOCUMENT_TYPES['facture'],
                     'numero_facture' => $vente->facture->numero_facture ?? null,
                     'date_livraison' => $vente->date_livraison ?? null,
                 ];
@@ -35,14 +52,12 @@ class VentesScreen extends Screen
 
             return [
                 'ventes' => $formatted,
+                'devis' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['devis']),
+                'factures' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['facture']),
+                'avoirs' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['avoir']),
             ];
         }
 
-
-    public function name(): string
-    {
-        return 'Gestion des Ventes';
-    }
 
     public function layout(): array
     {
@@ -54,24 +69,26 @@ class VentesScreen extends Screen
                 'Historique' => [
                     HistVentesRow::class,
                 ],
+                'Devis' => [
+                    DevisTable::class,
+                ],
+                'Factures' => [
+                    FactureTable::class,
+                ],
+                'Avoirs' => [
+                    AvoirTable::class,
+                ],
             ]),
         ];
     }
 
-
     public function addToVentesTable(Request $request)
     {
-        // dd('Orchid reçoit bien la requête !', $request->all());2
         return (new VenteController)->addToVentesTable($request);
     }
 
     public function removeFromVentesTable(Request $request)
     {
         return (new VenteController)->removeFromVentesTable($request);
-    }
-
-    public function saveVentes(Request $request)
-    {
-        return (new VenteController)->saveVentes($request);
     }
 }

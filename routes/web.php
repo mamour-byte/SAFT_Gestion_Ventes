@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VenteController;
+use App\Http\Controllers\pdfController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -10,3 +12,5 @@ Route::get('/', function () {
 
 Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTable'])
     ->name('ventes.addToVentesTable');
+
+    Route::get('/ventes/pdf/{id}', [pdfController::class, 'downloadPDF'])->name('ventes.download.pdf');
