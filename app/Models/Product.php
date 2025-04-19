@@ -17,5 +17,11 @@ class Product extends Model
         'prix_unitaire',
         'quantite_stock',
     ];
+
+    public function details()
+        {
+            return $this->hasMany(DetailVente::class, 'id_product', 'id_product');
+        }
+
 }
 

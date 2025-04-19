@@ -9,26 +9,24 @@ class Ventes extends Model
 {
     use HasFactory;
 
-    // Clé primaire (si différent de 'id')
     protected $primaryKey = 'id_vente';
-    protected $fillable = ['id_user', 'id_client'];
 
-    public function details()
-    {
-        return $this->hasMany(DetailVente::class);
-    }
-
-    public function utilisateur()
-    {
-        return $this->belongsTo(User::class, 'id_user','id');
-    }
+    protected $fillable = [
+        'id_client', 'id_user', 'date_vente', 'id_facture',
+    ];
 
     public function client()
     {
-        return $this->belongsTo(Client::class, 'id_client','id_client');
+        return $this->belongsTo(Client::class, 'id_client', 'id_client');
     }
+
     public function facture()
     {
-        return $this->belongsTo(Facture::class, 'id_facture');
+        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(DetailVente::class, 'id_vente', 'id_vente');
     }
 }

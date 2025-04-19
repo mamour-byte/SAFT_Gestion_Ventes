@@ -15,10 +15,29 @@ class VentesScreen extends Screen
 {
     public function query()
         {
+            $ventes = \App\Models\Ventes::with(['client', 'details.product', 'facture'])->latest()->get();
+
+            $formatted = $ventes->map(function ($vente) {
+                return [
+                    'id_client' => $vente->id_client,
+                    'produits' => $vente->details->map(function ($detail) {
+                        return [
+                            'nom' => $detail->product->nom ?? 'Produit inconnu',
+                            'quantite' => $detail->quantite_vendue,
+                            'prix_unitaire' => $detail->product->prix_unitaire ?? 0,
+                        ];
+                    }),
+                    'type_document' => $vente->facture->type_document ?? 'facture',
+                    'numero_facture' => $vente->facture->numero_facture ?? null,
+                    'date_livraison' => $vente->date_livraison ?? null,
+                ];
+            });
+
             return [
-                'ventes' => Ventes::with(['client', 'details.product'])->latest()->get(),
+                'ventes' => $formatted,
             ];
         }
+
 
     public function name(): string
     {
@@ -26,23 +45,23 @@ class VentesScreen extends Screen
     }
 
     public function layout(): array
-        {
-            return [
-                Layout::tabs([
-                    'Nouvelle Vente' => [
-                        NouvVentesRow::class,
-                    ],
-                    'Historique' => [
-                        HistVentesRow::class,
-                    ],
-                ]),
-            ];
-        }
+    {
+        return [
+            Layout::tabs([
+                'Nouvelle Vente' => [
+                    NouvVentesRow::class,
+                ],
+                'Historique' => [
+                    HistVentesRow::class,
+                ],
+            ]),
+        ];
+    }
 
 
     public function addToVentesTable(Request $request)
     {
-        // dd('Orchid reçoit bien la requête !', $request->all());
+        // dd('Orchid reçoit bien la requête !', $request->all());2
         return (new VenteController)->addToVentesTable($request);
     }
 

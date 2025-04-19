@@ -11,6 +11,7 @@ class HistVentesRow extends Table
     protected $target = 'ventes';
 
 
+
     protected function columns(): array
     {
         return [
@@ -19,7 +20,7 @@ class HistVentesRow extends Table
                     $client = \App\Models\Client::find($item['id_client']);
                     return $client ? $client->nom : 'Client inconnu';
                 }),
-                
+
             TD::make('produits', 'Produits')
                 ->render(function ($item) {
                     return collect($item['produits'])->map(function ($produit) {
@@ -34,25 +35,27 @@ class HistVentesRow extends Table
                     });
                     return number_format($total ) . 'f cfa';
                 }),
-            
+                       
+                
             TD::make('type_document', 'Type')
-                ->render(function ($item) {
-                    return ucfirst($item['type_document'] ?? 'Inconnu');
-                }),
+                    ->render(function ($vente) {
+                        return isset($vente['type_document']) ? ucfirst($vente['type_document']) : '—';
+                    }),
+            
+            
             
             TD::make('numero_facture', 'N° Document')
                 ->render(function ($item) {
                     return $item['numero_facture'] ?? '—';
                 }),
             
-            TD::make('date_livraison', 'Date livraison')
-                ->render(function ($item) {
-                    return isset($item['date_livraison']) ? \Carbon\Carbon::parse($item['date_livraison'])->format('d/m/Y') : '—';
-                }),
-            
+            // TD::make('date_livraison', 'Date livraison')
+            //     ->render(function ($item) {
+            //         return isset($item['date_livraison']) ? \Carbon\Carbon::parse($item['date_livraison'])->format('d/m/Y') : '—';
+            //     }),
 
                 
-                TD::make('actions', 'Actions')
+            TD::make('actions', 'Actions')
                 ->render(function ($item, $key) {
                     $buttons = [];
             
