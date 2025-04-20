@@ -6,24 +6,20 @@ use Illuminate\Http\Request;
 
 class pdfController extends Controller
 {
-    public function downloadPDF(Request $request)
-        {
-            $index = $request->get('index');
+    public function show(string $type, string $id)
+    {
+        abort_unless(in_array($type, ['facture', 'devis', 'avoir']), 404);
+        
+        $model = match($type) {
+            'facture' => Facture::findOrFail($id),
+            'devis' => Devis::findOrFail($id),
+            'avoir' => Avoir::findOrFail($id),
+        };
 
-            $venteData = session('ventes')[$index] ?? null;
-
-            if (!$venteData) {
-                Toast::error('Vente introuvable.');
-                return redirect()->back();
-            }
-
-            $pdf = PDF::loadView('pdf.vente', ['vente' => $venteData]);
-
-            return response()->streamDownload(
-                fn () => print($pdf->output()),
-                'document_vente_' . now()->format('Ymd_His') . '.pdf'
-            );
-        }
+        $pdf = PDF::loadView("pdf.{$type}", ['document' => $model]);
+        
+        return $pdf->stream("{$type}-{$model->numero}.pdf");
+    }
 
         
 }

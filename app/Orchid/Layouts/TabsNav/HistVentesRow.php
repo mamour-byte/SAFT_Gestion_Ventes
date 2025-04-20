@@ -44,13 +44,6 @@ class HistVentesRow extends Table
                     return isset($item['tva']) && $item['tva'] ? 'Oui' : 'Non';
                 }),
 
-            TD::make('total', 'Total HT')
-                ->render(function ($item) {
-                    $total = collect($item['produits'])->sum(function ($produit) {
-                        return $produit['quantite'] * $produit['prix_unitaire'];
-                    });
-                    return number_format($total ) . 'f cfa';
-                }),
             
             TD::make('total', 'Total TTC')
                 ->render(function ($item) {
@@ -89,18 +82,46 @@ class HistVentesRow extends Table
                             ->confirm('Confirmer la transformation de ce document en facture ?')
                             ->render();
                     }
-                    
-            
-                    // Générer le PDF
-                    $buttons[] = Button::make('Télécharger PDF')
-                        ->method('downloadPDF')
-                        ->parameters(['index' => $key])
-                        ->class('btn btn-info btn-sm')
-                        ->render();
-
-            
                     return implode(' ', $buttons);
                 }),
+            
+
+            
+            TD::make('pdf', 'PDF')
+                ->render(function (array $vente) {
+                    // Vérification en cascade
+                    $hasDocument = !empty($vente['document_id']) && !empty($vente['type_document']) && !empty($vente['id']);
+
+                    \Log::info('Vente data:', $vente);
+                    \Log::info('Has document:', ['hasDocument' => $hasDocument]);
+
+                    if (!$hasDocument) {
+                        return '<span class="text-muted" title="Document non généré">
+                            <i class="icon-close"></i>
+                        </span>';
+                    }
+
+                    $routeParams = [
+                        'type' => $vente['type_document'],
+                        'id' => $vente['document_id']
+                    ];
+
+                    // \Log::info('Route parameters:', $routeParams);
+
+                    return "
+                        <a href='" . route('documents.show', $routeParams) . "'
+                        target='_blank'
+                        class='btn btn-sm btn-primary'
+                        title='Télécharger le PDF'>
+                        <i class='icon-doc'></i> PDF
+                        </a>
+                    ";
+                })
+                ->alignCenter()
+                ->width('120px')
+    
+                    
+                
             
         ];
     }

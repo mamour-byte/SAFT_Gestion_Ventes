@@ -13,6 +13,10 @@ use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
 use App\Models\Ventes;
 
+use Orchid\Support\Facades\Toast;
+use PDF;
+use Orchid\Screen\Actions\Button;
+
 class VentesScreen extends Screen
 {
     private const DOCUMENT_TYPES = [
@@ -26,6 +30,8 @@ class VentesScreen extends Screen
             return 'Gestion des Ventes';
         }
 
+    
+
     public function query(): array
         {
             $ventes = Ventes::with(['client', 'details.product', 'facture'])
@@ -35,6 +41,7 @@ class VentesScreen extends Screen
             $formatted = $ventes->map(function ($vente) {
                 return [
                     'id' => $vente->id, 
+                    'document_id' => $vente->facture->id ?? null, 
                     'id_client' => $vente->id_client,
                     'client_nom' => $vente->client->nom ?? 'Client inconnu',
                     'produits' => $vente->details->map(function ($detail) {

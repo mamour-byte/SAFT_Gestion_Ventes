@@ -13,4 +13,6 @@ Route::get('/', function () {
 Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTable'])
     ->name('ventes.addToVentesTable');
 
-    Route::get('/ventes/pdf/{id}', [pdfController::class, 'downloadPDF'])->name('ventes.download.pdf');
+
+Route::get('/documents/{type}/{id}', [pdfController::class, 'show'])
+    ->name('documents.show');
