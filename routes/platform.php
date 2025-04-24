@@ -17,6 +17,7 @@ use App\Orchid\Screens\ClientAddScreen;
 use App\Orchid\Screens\ClientEditScreen;
 use App\Orchid\Screens\VentesScreen;
 use App\Orchid\Screens\FactureScreen;
+use App\Orchid\Screens\DashbordScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,26 +30,24 @@ use App\Orchid\Screens\FactureScreen;
 |
 */
 // ----------------- Platform Accueil ---------------------
-Route::screen('/main', PlatformScreen::class)->name('platform.main');
-
-
+Route::screen('/index', PlatformScreen::class)->name('platform.index');
 
 
 
 // ------------------Platform Produit------------------------
-Route::screen('/product', ProductScreen::class)->name('platform.product')
-    ->breadcrumbs(function (Trail $trail) {
-        return $trail
-            ->parent('platform.index')
-            ->push('Produits', route('platform.product'));
-        });
+Route::screen('/product', ProductScreen::class)->name('platform.product');
+    // ->breadcrumbs(function (Trail $trail) {
+    //     return $trail
+    //         ->parent('platform.index')
+    //         ->push('Produits', route('platform.product'));
+    //     });
 // Ajouter produit 
-Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.product')
-        ->push('Ajouter Produit', route('platform.product.add'));
-});
+Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.add');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.product')
+//         ->push('Ajouter Produit', route('platform.product.add'));
+// });
 // Edit  produit 
 Route::screen('product/edit/{product}', ProductEditScreen::class)->name('platform.product.edit')
 ->breadcrumbs(function (Trail $trail) {
@@ -69,61 +68,52 @@ Route::delete('product/{product}', [ProductEditScreen::class, 'remove'])->name('
 
 // --------------- Platform Clients ----------------
 
-Route::screen('/clients', ClientsScreen::class)->name('platform.clients')
-    ->breadcrumbs(function (Trail $trail) {
-        return $trail
-            ->parent('platform.index')
-            ->push('Clients', route('platform.clients'));
-        });
+Route::screen('/clients', ClientsScreen::class)->name('platform.clients');
+    // ->breadcrumbs(function (Trail $trail) {
+    //     return $trail
+    //         ->parent('platform.index')
+    //         ->push('Clients', route('platform.clients'));
+    //     });
 // Ajouter Clients
-Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.clients')
-        ->push('Ajouter Client', route('platform.clients.add'));
-});
+Route::screen('/clients/add', ClientAddScreen::class)->name('platform.clients.add');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.clients')
+//         ->push('Ajouter Client', route('platform.clients.add'));
+// });
 // supprimer un Client  
 Route::delete('/clients/{id}', [ClientsScreen::class, 'delete'])->name('platform.clients.delete');
 
 
 // Editer un client 
-Route::screen('clients/edit/{client}', ClientEditScreen::class)->name('platform.clients.edit')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.clients')
-        ->push('Editer Client', route('platform.clients.edit'));
-});
+Route::screen('clients/edit/{client}', ClientEditScreen::class)->name('platform.clients.edit');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.clients')
+//         ->push('Editer Client', route('platform.clients.edit'));
+// });
 
 
 
 
 
 // -------------------------Plateform ventes-------------------------
-Route::screen('/ventes', VentesScreen::class)->name('platform.ventes')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.index')
-        ->push('Ventes', route('platform.ventes'));
-});
-
-
-
-
-// -----------------Plateform Facture ----------------------------
-Route::screen('/facture', FactureScreen::class)->name('platform.facture');
-
-
-
+Route::screen('/ventes', VentesScreen::class)->name('platform.ventes');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.index')
+//         ->push('Ventes', route('platform.ventes'));
+// });
 
 
 
 
 // Platform > Profile
 Route::screen('profile', UserProfileScreen::class)
-    ->name('platform.profile')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
-        ->push(__('Profile'), route('platform.profile')));
+    ->name('platform.profile');
+    // ->breadcrumbs(fn (Trail $trail) => $trail
+    //     ->parent('platform.index')
+    //     ->push(__('Profile'), route('platform.profile')));
 
 // Platform > System > Users > User
 Route::screen('users/{user}/edit', UserEditScreen::class)
@@ -141,9 +131,9 @@ Route::screen('users/create', UserEditScreen::class)
 
 // Platform > System > Users
 Route::screen('users', UserListScreen::class)
-    ->name('platform.systems.users')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
-        ->push(__('Users'), route('platform.systems.users')));
+    ->name('platform.systems.users');
+    // ->breadcrumbs(fn (Trail $trail) => $trail
+    //     ->parent('platform.index')
+    //     ->push(__('Users'), route('platform.systems.users')));
 
 

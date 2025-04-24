@@ -38,15 +38,13 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make('Accueil')
                 ->icon('house')
                 ->title('Navigation')
-                ->route('platform.main'),
+                ->route('platform.index'),
+
 
             Menu::make('Ventes')
                 ->icon('cash-coin')
                 ->route('platform.ventes'),
 
-            Menu::make('Facture')
-                ->icon('receipt')
-                ->route('platform.facture'),
 
             Menu::make('Product')
                 ->icon('bag-fill')

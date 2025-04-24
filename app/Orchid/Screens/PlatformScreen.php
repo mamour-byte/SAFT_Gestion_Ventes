@@ -14,10 +14,12 @@ class PlatformScreen extends Screen
      *
      * @return array
      */
-    public function query(): iterable
-    {
-        return [];
-    }
+        public function query(){
+            $stats = new StatistiqueController();
+                return [
+                    'ventes_par_produit' => $stats->ventesParProduit()
+                ];
+            }
 
     /**
      * The name of the screen displayed in the header.
@@ -53,8 +55,8 @@ class PlatformScreen extends Screen
     public function layout(): iterable
     {
         return [
-            Layout::view('platform::partials.update-assets'),
-            Layout::view('platform::partials.welcome'),
+            Layout::view('platform.ChartsLayout'),
+
         ];
     }
 }
