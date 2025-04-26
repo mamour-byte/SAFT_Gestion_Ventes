@@ -11,11 +11,12 @@ class DetailVente extends Model
 
     protected $table = 'details_ventes'; 
 
-    protected $primaryKey = 'id_detail_ventes'; 
+    protected $primaryKey = 'id_details_ventes'; 
 
     protected $fillable = [
         'id_vente',
         'id_product',
+        'date_vente',
         'quantite_vendue',
         'prix_total',
     ];

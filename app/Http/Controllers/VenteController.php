@@ -65,6 +65,7 @@ class VenteController extends Controller
                     'id_product' => $idProduct,
                     'quantite_vendue' => $quantite,
                     'prix_total' => $quantite * $product->prix_unitaire,
+                    'date_vente' => now(),
                 ]);
 
                 $product->decrement('quantite_stock', $quantite);

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Orchid\Layouts;
+namespace App\Orchid\Layouts\Charts;
 
 use Orchid\Screen\Layouts\Chart;
 
-class ChartsLayout extends Chart
+class ClientChart extends Chart
 {
     /**
      * Available options:
@@ -21,4 +21,16 @@ class ChartsLayout extends Chart
      * @var bool
      */
     protected $export = true;
+
+    /**
+     * Data source.
+     *
+     * The name of the key to fetch it from the query.
+     * The results of which will be elements of the chart.
+     *
+     * @var string
+     */
+    protected $target = 'ClientData';
 }
+
+    
