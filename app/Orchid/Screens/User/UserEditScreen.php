@@ -48,7 +48,7 @@ class UserEditScreen extends Screen
      */
     public function name(): ?string
     {
-        return $this->user->exists ? 'Edit User' : 'Create User';
+        return $this->user->exists ? 'Modifier Utilisateur' : 'Créer Utilisateur';
     }
 
     /**
@@ -56,7 +56,7 @@ class UserEditScreen extends Screen
      */
     public function description(): ?string
     {
-        return 'User profile and privileges, including their associated role.';
+        return 'Crée ou modifie un utilisateur';
     }
 
     public function permission(): ?iterable
@@ -100,8 +100,8 @@ class UserEditScreen extends Screen
         return [
 
             Layout::block(UserEditLayout::class)
-                ->title(__('Profile Information'))
-                ->description(__('Update your account\'s profile information and email address.'))
+                ->title(__('Information du Profil'))
+                ->description(__('Mettez à jour les informations de votre compte et l\'adresse e-mail.'))
                 ->commands(
                     Button::make(__('Save'))
                         ->type(Color::BASIC)
@@ -111,8 +111,8 @@ class UserEditScreen extends Screen
                 ),
 
             Layout::block(UserPasswordLayout::class)
-                ->title(__('Password'))
-                ->description(__('Ensure your account is using a long, random password to stay secure.'))
+                ->title(__('Mot de passe'))
+                ->description(__('Securisez votre compte en utilisant un mot de passe long et aléatoire.'))
                 ->commands(
                     Button::make(__('Save'))
                         ->type(Color::BASIC)
@@ -122,8 +122,8 @@ class UserEditScreen extends Screen
                 ),
 
             Layout::block(UserRoleLayout::class)
-                ->title(__('Roles'))
-                ->description(__('A Role defines a set of tasks a user assigned the role is allowed to perform.'))
+                ->title(__('Rôles'))
+                ->description(__('Un rôle définit un ensemble de tâches qu\'un utilisateur assigné au rôle est autorisé à effectuer.'))
                 ->commands(
                     Button::make(__('Save'))
                         ->type(Color::BASIC)
@@ -134,7 +134,7 @@ class UserEditScreen extends Screen
 
             Layout::block(RolePermissionLayout::class)
                 ->title(__('Permissions'))
-                ->description(__('Allow the user to perform some actions that are not provided for by his roles'))
+                ->description(__('Les permissions sont des actions spécifiques qu\'un utilisateur peut effectuer.'))
                 ->commands(
                     Button::make(__('Save'))
                         ->type(Color::BASIC)
@@ -174,7 +174,7 @@ class UserEditScreen extends Screen
 
         $user->replaceRoles($request->input('user.roles'));
 
-        Toast::info(__('User was saved.'));
+        Toast::info(__('Utilisateur enregistré'));
 
         return redirect()->route('platform.systems.users');
     }
@@ -188,7 +188,7 @@ class UserEditScreen extends Screen
     {
         $user->delete();
 
-        Toast::info(__('User was removed'));
+        Toast::info(__('Utilisateur supprimé'));
 
         return redirect()->route('platform.systems.users');
     }
@@ -200,7 +200,9 @@ class UserEditScreen extends Screen
     {
         Impersonation::loginAs($user);
 
-        Toast::info(__('You are now impersonating this user'));
+        Toast::info(__('vous êtes connecté en tant que :user', [
+            'user' => $user->name,
+        ]));
 
         return redirect()->route(config('platform.index'));
     }

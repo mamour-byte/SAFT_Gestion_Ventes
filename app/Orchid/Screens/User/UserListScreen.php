@@ -37,7 +37,7 @@ class UserListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'User Management';
+        return 'Gestion des utilisateurs';
     }
 
     /**
@@ -45,7 +45,7 @@ class UserListScreen extends Screen
      */
     public function description(): ?string
     {
-        return 'A comprehensive list of all registered users, including their profiles and privileges.';
+        return 'Liste des utilisateurs avec gestion des rôles et permissions';
     }
 
     public function permission(): ?iterable

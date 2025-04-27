@@ -17,19 +17,14 @@ use App\Orchid\Layouts\TabsNav\AvoirTable;
 
 class PlatformScreen extends Screen
 {
-
-
-    /**
-     * Fetch data to be displayed on the screen.
-     *
-     * @return array
-     */
-    public function query(): array
+    private const DOCUMENT_TYPES = [
+        'devis' => 'devis',
+        'facture' => 'facture',
+        'avoir' => 'avoir'
+    ];
+    private function formatVentes($ventes)
         {
-            $ventes = Ventes::with(['client', 'details.product', 'facture'])
-                ->latest()
-                ->get();
-            $formatted = $ventes->map(function ($vente) {
+            return $ventes->map(function ($vente) {
                 return [
                     'id' => $vente->id,
                     'document_id' => $vente->facture->id ?? null,
@@ -42,11 +37,23 @@ class PlatformScreen extends Screen
                             'prix_unitaire' => $detail->product->prix_unitaire ?? 0,
                         ];
                     })->values()->all(),
-                    'type_document' => $vente->facture->type_document ?? 'facture',
+                    'type_document' => $vente->facture->type_document ?? self::DOCUMENT_TYPES['facture'],
                     'numero_facture' => $vente->facture->numero_facture ?? null,
                     'date_livraison' => $vente->date_livraison ?? null,
                 ];
             });
+        }
+
+    /**
+     * Fetch data to be displayed on the screen.
+     *
+     * @return array
+     */
+    public function query(): array
+        {
+            $ventes = Ventes::with(['client', 'details.product', 'facture'])->latest()->get();
+            $formatted = $this->formatVentes($ventes);
+        
 
 
             $ventesParProduit = app(ChartController::class)->ventesParProduit();
@@ -62,7 +69,7 @@ class PlatformScreen extends Screen
                 ],
                 'monthlySalesData' => [
                     [
-                        'labels' => $ventesMensuelles->pluck('mois')->toArray(),
+                        'labels' => $ventesMensuelles->pluck('date')->toArray(),
                         'values' => $ventesMensuelles->pluck('total_ventes')->toArray(),
                     ],
                 ],
@@ -72,6 +79,19 @@ class PlatformScreen extends Screen
                         'values' => $venteParClient->pluck('total_ventes')->toArray(),
                     ],
                 ],
+
+                'ventes' => $formatted,
+                'devis' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['devis']),
+                'factures' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['facture']),
+                'avoirs' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['avoir']),
+
+                'metrics' => [
+                'sales'    => ['value' => number_format(6851), 'diff' => 10.08],
+                'visitors' => ['value' => number_format(24668), 'diff' => -30.76],
+                'orders'   => ['value' => number_format(10000), 'diff' => 5.12],
+                'total'    => number_format(65661),
+                ],
+                
             ];
         }
 
@@ -109,16 +129,29 @@ class PlatformScreen extends Screen
     public function layout(): iterable
     {
         return [
+            Layout::metrics([
+                'Meilleur Vente du Mois'    => 'metrics.sales',
+                'Meilleur Client' => 'metrics.visitors',
+                'Nombre de Factures du mois' => 'metrics.orders',
+                'Total Generé' => 'metrics.total',
+            ]),
+
             Layout::columns([
+                Layout::tabs([
+                    'Factures' => FactureTable::class,
+                    'Devis' => DevisTable::class,
+                    'Avoirs' => AvoirTable::class,
+                ]),
+                
+                
+            ]),
+            layout::columns([
                 ProductChart::class,
                 VenteChart::class,
             ]),
             ClientChart::class,
-            Layout::tabs([
-                'Devis' => DevisTable::class,
-                'Factures' => FactureTable::class,
-                'Avoirs' => AvoirTable::class,
-            ]),
+            
+            
             
 
         ];

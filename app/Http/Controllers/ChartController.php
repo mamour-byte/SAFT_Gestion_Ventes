@@ -48,31 +48,28 @@ class ChartController extends Controller
         }
 
         public function ventesParJourDuMois()
-        {
-            $query = Ventes::query()
-                ->selectRaw('DATE(ventes.created_at) as date, COUNT(ventes.id_vente) as total_ventes')
-                ->whereMonth('ventes.created_at', now()->month)
-                ->whereYear('ventes.created_at', now()->year)
-                ->groupBy('date')
-                ->orderBy('date', 'ASC');
-            $query->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
-                ->selectRaw('DATE(ventes.created_at) as date, SUM(details_ventes.quantite_vendue) as total_ventes')
-                ->groupBy('date')
-                ->orderBy('date', 'ASC');
-            return $query->get();
-        }
+            {
+                return \DB::table('ventes')
+                    ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+                    ->selectRaw('DATE(details_ventes.date_vente) as date, COUNT(ventes.id_vente) as total_ventes, SUM(details_ventes.quantite_vendue) as total_quantite')
+                    ->whereMonth('details_ventes.date_vente', 4)
+                    ->whereYear('details_ventes.date_vente', 2025)
+                    ->groupBy('date')
+                    ->orderBy('date', 'asc')
+                    ->get();
+            }
 
         public function ventesParMois($startDate = null, $endDate = null)
-        {
-            $query = Ventes::query()
-                ->selectRaw('DATE_FORMAT(ventes.created_at, "%Y-%m") as mois, SUM(details_ventes.quantite_vendue) as total_ventes')
-                ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
-        
-            $this->applyDateFilter($query, $startDate, $endDate);
-        
-            return $query->groupBy('mois')
-                ->orderBy('mois', 'ASC')
-                ->get();
-        }
+            {
+                $query = Ventes::query()
+                    ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.quantite_vendue) as total_ventes')
+                    ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
+            
+                $this->applyDateFilter($query, $startDate, $endDate);
+            
+                return $query->groupBy('mois')
+                    ->orderBy('mois', 'ASC')
+                    ->get();
+            }
 
 }

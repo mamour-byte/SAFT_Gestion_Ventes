@@ -38,7 +38,7 @@ class UserProfileScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'My Account';
+        return 'Mon Compte';
     }
 
     /**
@@ -46,7 +46,7 @@ class UserProfileScreen extends Screen
      */
     public function description(): ?string
     {
-        return 'Update your account details such as name, email address and password';
+        return 'Mettre à jour ou modifier le profil';
     }
 
     /**
@@ -57,13 +57,13 @@ class UserProfileScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make('Back to my account')
+            Button::make('Retour')
                 ->novalidate()
                 ->canSee(Impersonation::isSwitch())
                 ->icon('bs.people')
                 ->route('platform.switch.logout'),
 
-            Button::make('Sign out')
+            Button::make('Deconnexion')
                 ->novalidate()
                 ->icon('bs.box-arrow-left')
                 ->route('platform.logout'),
@@ -77,8 +77,8 @@ class UserProfileScreen extends Screen
     {
         return [
             Layout::block(UserEditLayout::class)
-                ->title(__('Profile Information'))
-                ->description(__("Update your account's profile information and email address."))
+                ->title(__('Information du Profil'))
+                ->description(__("Mettez à jour votre nom et votre adresse e-mail. Vous recevrez un e-mail de confirmation à la nouvelle adresse e-mail."))
                 ->commands(
                     Button::make(__('Save'))
                         ->type(Color::BASIC())
@@ -87,8 +87,8 @@ class UserProfileScreen extends Screen
                 ),
 
             Layout::block(ProfilePasswordLayout::class)
-                ->title(__('Update Password'))
-                ->description(__('Ensure your account is using a long, random password to stay secure.'))
+                ->title(__('Mettre à jour le mot de passe'))
+                ->description(__('Utilisez un mot de passe fort pour protéger votre compte.'))
                 ->commands(
                     Button::make(__('Update password'))
                         ->type(Color::BASIC())
@@ -112,7 +112,7 @@ class UserProfileScreen extends Screen
             ->fill($request->get('user'))
             ->save();
 
-        Toast::info(__('Profile updated.'));
+        Toast::info(__('Profil mis à jour.'));
     }
 
     public function changePassword(Request $request): void
@@ -127,6 +127,6 @@ class UserProfileScreen extends Screen
             $user->password = Hash::make($request->get('password'));
         })->save();
 
-        Toast::info(__('Password changed.'));
+        Toast::info(__('Mot de passe mis à jour.'));
     }
 }
