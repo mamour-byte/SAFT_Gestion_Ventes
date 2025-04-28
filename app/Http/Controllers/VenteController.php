@@ -85,33 +85,35 @@ class VenteController extends Controller
     /**
      * Supprimer une vente et mettre à jour le stock
      */
-    public function removeFromVentesTable(Request $request)
-    {
-        $request->validate(['id_vente' => 'required|exists:ventes,id_vente']);
+    public function destroy(Product $product)
+        {
+            $product->delete();
 
-        try {
-            DB::beginTransaction();
-
-            $vente = Ventes::findOrFail($request->id_vente);
-
-            foreach ($vente->details as $detail) {
-                $product = Product::find($detail->id_product);
-                if ($product) {
-                    $product->increment('quantite_stock', $detail->quantite_vendue);
-                }
-            }
-
-            // Supprimer les détails, la vente et la facture liée
-            $vente->details()->delete();
-            $vente->delete();
-            $vente->facture?->delete();
-
-            DB::commit();
-
-            return back()->with('success', 'Vente supprimée avec succès.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Erreur : ' . $e->getMessage());
+            return redirect()->route('platform.product.list')
+                ->with('success', 'Produit supprimé avec succès');
         }
+    
+
+
+    /**
+     * Update the specified product.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Product $product
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'product.nom' => 'required|string|max:255',
+            'product.description' => 'required|string',
+            'product.prix_unitaire' => 'required|numeric|min:0',
+            'product.quantite_stock' => 'required|integer|min:0',
+        ]);
+
+        $product->update($request->input('product'));
+
+        return redirect()->route('platform.product')
+            ->with('success', 'Produit mis à jour avec succès');
     }
 }

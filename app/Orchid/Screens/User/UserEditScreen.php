@@ -74,19 +74,21 @@ class UserEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make(__('Impersonate user'))
+            Button::make(__('Changer de compte'))
                 ->icon('bg.box-arrow-in-right')
-                ->confirm(__('You can revert to your original state by logging out.'))
+                ->confirm(__('Vous allez vous connecter en tant que :user', [
+                    'user' => $this->user->name,
+                ]))
                 ->method('loginAs')
                 ->canSee($this->user->exists && $this->user->id !== \request()->user()->id),
 
-            Button::make(__('Remove'))
+            Button::make(__('Supprimer'))
                 ->icon('bs.trash3')
-                ->confirm(__('Once the account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.'))
+                ->confirm(__('Le compte sera supprimé définitivement. Êtes-vous sûr ?'))
                 ->method('remove')
                 ->canSee($this->user->exists),
 
-            Button::make(__('Save'))
+            Button::make(__('Sauvegarder'))
                 ->icon('bs.check-circle')
                 ->method('save'),
         ];

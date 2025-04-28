@@ -4,72 +4,143 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Vente;
-use App\Models\Produit;
 use App\Models\Ventes;
+use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
 {
-    /**
-     * Filtre les ventes par date.
-     */
+
     private function applyDateFilter($query, $startDate, $endDate)
-        {
-            return $query->when($startDate, fn($q) => $q->whereDate('created_at', '>=', $startDate))
-                        ->when($endDate, fn($q) => $q->whereDate('created_at', '<=', $endDate));
+    {
+        return $query->when($startDate, fn($q) => $q->whereDate('ventes.created_at', '>=', $startDate))
+                    ->when($endDate, fn($q) => $q->whereDate('ventes.created_at', '<=', $endDate));
+    }
+
+    private function setDefaultDateRange(&$startDate, &$endDate)
+    {
+        if (!$startDate) {
+            $startDate = now()->startOfMonth()->toDateString();
         }
+        if (!$endDate) {
+            $endDate = now()->endOfMonth()->toDateString();
+        }
+    }
 
     public function ventesParProduit($startDate = null, $endDate = null)
-        {
-            $query = Ventes::query()
-                ->selectRaw('products.nom, SUM(details_ventes.quantite_vendue) as total_ventes')
-                ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
-                ->join('products', 'details_ventes.id_product', '=', 'products.id_product');
-        
-            $this->applyDateFilter($query, $startDate, $endDate);
-        
-            return $query->groupBy('products.nom')
-                ->orderBy('total_ventes', 'DESC')
-                ->get();
-        }
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
+
+        $query = Ventes::query()
+            ->selectRaw('products.nom, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+            ->join('products', 'details_ventes.id_product', '=', 'products.id_product');
+
+        $this->applyDateFilter($query, $startDate, $endDate);
+
+        return $query->groupBy('products.nom')
+            ->orderBy('total_ventes', 'DESC')
+            ->get();
+    }
 
     public function ventesParClient($startDate = null, $endDate = null)
-        {
-            $query = Ventes::query()
-                ->selectRaw('clients.nom as client, SUM(details_ventes.quantite_vendue) as total_ventes')
-                ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
-                ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
-        
-            $this->applyDateFilter($query, $startDate, $endDate);
-        
-            return $query->groupBy('clients.nom')
-                ->having('total_ventes', '>', 0)
-                ->orderBy('total_ventes', 'DESC')
-                ->get();
-        }
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
 
-        public function ventesParJourDuMois()
-            {
-                return \DB::table('ventes')
-                    ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
-                    ->selectRaw('DATE(details_ventes.date_vente) as date, COUNT(ventes.id_vente) as total_ventes, SUM(details_ventes.quantite_vendue) as total_quantite')
-                    ->whereMonth('details_ventes.date_vente', 4)
-                    ->whereYear('details_ventes.date_vente', 2025)
-                    ->groupBy('date')
-                    ->orderBy('date', 'asc')
-                    ->get();
-            }
+        $query = Ventes::query()
+            ->selectRaw('clients.nom as client, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
-        public function ventesParMois($startDate = null, $endDate = null)
-            {
-                $query = Ventes::query()
-                    ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.quantite_vendue) as total_ventes')
-                    ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
-            
-                $this->applyDateFilter($query, $startDate, $endDate);
-            
-                return $query->groupBy('mois')
-                    ->orderBy('mois', 'ASC')
-                    ->get();
-            }
+        $this->applyDateFilter($query, $startDate, $endDate);
 
+        return $query->groupBy('clients.nom')
+            ->having('total_ventes', '>', 0)
+            ->orderBy('total_ventes', 'DESC')
+            ->get();
+    }
+
+    public function ventesParJourDuMois()
+    {
+        return DB::table('ventes')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+            ->selectRaw('DATE(details_ventes.date_vente) as date, COUNT(ventes.id_vente) as total_ventes, SUM(details_ventes.quantite_vendue) as total_quantite')
+            ->whereMonth('details_ventes.date_vente', now()->month)
+            ->whereYear('details_ventes.date_vente', now()->year)
+            ->groupBy('date')
+            ->orderBy('date', 'ASC')
+            ->get();
+    }
+
+    public function ventesParMois($startDate = null, $endDate = null)
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
+
+        $query = Ventes::query()
+            ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
+
+        $this->applyDateFilter($query, $startDate, $endDate);
+
+        return $query->groupBy('mois')
+            ->orderBy('mois', 'ASC')
+            ->get();
+    }
+
+    public function meilleureVenteDuMois($startDate = null, $endDate = null)
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
+
+        $query = Ventes::query()
+            ->selectRaw('products.nom as produit, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+            ->join('products', 'details_ventes.id_product', '=', 'products.id_product');
+
+        $this->applyDateFilter($query, $startDate, $endDate);
+
+        return $query->groupBy('produit')
+            ->orderBy('total_ventes', 'DESC')
+            ->first();
+    }
+
+    public function meilleurClientDuMois($startDate = null, $endDate = null)
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
+
+        $query = Ventes::query()
+            ->selectRaw('clients.nom as client, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
+
+        $this->applyDateFilter($query, $startDate, $endDate);
+
+        return $query->groupBy('client')
+            ->orderBy('total_ventes', 'DESC')
+            ->first();
+    }
+
+    public function NombredeFacturesDuMois($startDate = null, $endDate = null)
+    {
+        $query = Ventes::query()
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+            ->when($startDate, fn($q) => $q->whereDate('ventes.created_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('ventes.created_at', '<=', $endDate))
+            ->count();
+
+        return $query;
+    }
+
+    public function totalGenereDuMois($startDate = null, $endDate = null)
+    {
+        $this->setDefaultDateRange($startDate, $endDate);
+
+        $query = Ventes::query()
+            ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.prix_total) as total_ventes')
+            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
+
+        $this->applyDateFilter($query, $startDate, $endDate);
+
+        return $query->groupBy('mois')
+            ->orderBy('mois', 'ASC')
+            ->get();
+    }
 }

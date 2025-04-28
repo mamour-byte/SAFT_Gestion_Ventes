@@ -59,6 +59,10 @@ class PlatformScreen extends Screen
             $ventesParProduit = app(ChartController::class)->ventesParProduit();
             $ventesMensuelles = app(ChartController::class)->ventesParJourDuMois();
             $venteParClient = app(ChartController::class)->ventesParClient();
+            $MeilleurVente=app(ChartController::class)->meilleureVenteDuMois();
+            $MeilleurClient=app(ChartController::class)->meilleurClientDuMois();
+            $NombreFactures=app(ChartController::class)->nombreDeFacturesDuMois();
+            $TotalGeneré=app(ChartController::class)->totalGenereDuMois();
             
             return [
                 'chartData' => [
@@ -85,11 +89,11 @@ class PlatformScreen extends Screen
                 'factures' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['facture']),
                 'avoirs' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['avoir']),
 
-                'metrics' => [
-                'sales'    => ['value' => number_format(6851), 'diff' => 10.08],
-                'visitors' => ['value' => number_format(24668), 'diff' => -30.76],
-                'orders'   => ['value' => number_format(10000), 'diff' => 5.12],
-                'total'    => number_format(65661),
+                'metrics' => [ 
+                    'Vente'    => ['value' => $MeilleurVente->produit, 'diff' => $MeilleurVente->total_ventes],
+                    'Client'   => ['value' => $MeilleurClient->client, 'diff' => $MeilleurClient->total_ventes],
+                    'Facture' => ['value' => $NombreFactures, 'diff' => 0],
+                    'Total'    => $TotalGeneré->first()?->total_ventes ?? 0,
                 ],
                 
             ];
@@ -130,10 +134,10 @@ class PlatformScreen extends Screen
     {
         return [
             Layout::metrics([
-                'Meilleur Vente du Mois'    => 'metrics.sales',
-                'Meilleur Client' => 'metrics.visitors',
-                'Nombre de Factures du mois' => 'metrics.orders',
-                'Total Generé' => 'metrics.total',
+                'Meilleur Vente'    => 'metrics.Vente',
+                'Meilleur Client' => 'metrics.Client',
+                'Nombre de Factures du mois' => 'metrics.Facture',
+                'Total Generé' => 'metrics.Total',
             ]),
 
             Layout::columns([

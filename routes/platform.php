@@ -49,19 +49,19 @@ Route::screen('/product/add', ProductAddScreen::class)->name('platform.product.a
 //         ->push('Ajouter Produit', route('platform.product.add'));
 // });
 // Edit  produit 
-Route::screen('product/edit/{product}', ProductEditScreen::class)->name('platform.product.edit')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.product')
-        ->push('Editer Produit', route('platform.product.edit'));
-});
+Route::screen('product/edit/{product}', ProductEditScreen::class)->name('platform.product.edit');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.product')
+//         ->push('Editer Produit', route('platform.product.edit'));
+// });
 // supprimer un Produit
-Route::delete('product/{product}', [ProductEditScreen::class, 'remove'])->name('platform.product.delete')
-->breadcrumbs(function (Trail $trail) {
-    return $trail
-        ->parent('platform.product')
-        ->push('Supprimer Produit', route('platform.product.delete'));
-});
+Route::delete('product/{product}', [ProductEditScreen::class, 'remove'])->name('platform.product.delete');
+// ->breadcrumbs(function (Trail $trail) {
+//     return $trail
+//         ->parent('platform.product')
+//         ->push('Supprimer Produit', route('platform.product.delete'));
+// });
 
 
 

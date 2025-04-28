@@ -9,6 +9,8 @@ use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\TextArea;
 use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
+use App\Http\Controllers\VenteController;
+use Illuminate\Http\RedirectResponse;
 
 class ProductEditScreen extends Screen
 {
@@ -52,7 +54,7 @@ class ProductEditScreen extends Screen
                 
             Button::make('Supprimer')
                 ->icon('bs.trash')
-                ->method('remove')
+                ->method('destroy')
                 ->confirm('Êtes-vous sûr de vouloir supprimer ce produit?'),
         ];
     }
@@ -90,32 +92,19 @@ class ProductEditScreen extends Screen
     /**
      * Save the product.
      */
-    public function save(Product $product, Request $request)
-    {
-        $request->validate([
-            'product.nom' => 'required|string|max:255',
-            'product.description' => 'required|string',
-            'product.prix_unitaire' => 'required|numeric|min:0',
-            'product.quantite_stock' => 'required|integer|min:0',
-        ]);
-
-        $product->update($request->input('product'));
-
-        return redirect()->route('platform.product')
-            ->with('success', 'Produit mis à jour avec succès');
-    }
+        public function save(Product $product, Request $request)
+        {
+            return app(VenteController::class)->update($request, $product);
+        }
 
     /**
      * Remove the product.
      * @param Product $product
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function remove(Product $product): \Illuminate\Http\RedirectResponse
+    public function destroy(Product $product): RedirectResponse
         {
-            $product->delete();
-            
-            return redirect()->route('platform.product.list')
-                ->with('success', 'Produit supprimé avec succès');
+            return app(VenteController::class)->destroy($product);
         }
 
     
