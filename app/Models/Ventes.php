@@ -17,12 +17,12 @@ class Ventes extends Model
 
     public function client()
     {
-        return $this->belongsTo(Client::class, 'id_client', 'id_client');
+        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture');
     }
 
     public function facture()
     {
-        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture');
+        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture'); 
     }
 
     public function details()

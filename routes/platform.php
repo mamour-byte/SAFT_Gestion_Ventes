@@ -18,6 +18,7 @@ use App\Orchid\Screens\ClientEditScreen;
 use App\Orchid\Screens\VentesScreen;
 use App\Orchid\Screens\FactureScreen;
 use App\Orchid\Screens\DashbordScreen;
+use App\Http\Controllers\pdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,3 +138,5 @@ Route::screen('users', UserListScreen::class)
     //     ->push(__('Users'), route('platform.systems.users')));
 
 
+// ----------------- Platform > Facture ---------------------
+Route::post('documents/download', [pdfController::class, 'downloadPDF'])->name('documents.download');

@@ -5,6 +5,8 @@ namespace App\Orchid\Layouts\TabsNav;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions;
+use Orchid\Support\Facades\Toast;
 
 class HistVentesRow extends Table
 {
@@ -87,42 +89,26 @@ class HistVentesRow extends Table
             
 
             
-            TD::make('pdf', 'PDF')
-                ->render(function (array $vente) {
-                    // Vérification en cascade
-                    $hasDocument = !empty($vente['document_id']) && !empty($vente['type_document']) && !empty($vente['id']);
+                TD::make('pdf', 'PDF')
+                ->render(function ($item) {
+                    $type = $item['type_document'] ?? 'facture';
+                    $id = $item['document_id'] ?? null;
 
-                    \Log::info('Vente data:', $vente);
-                    \Log::info('Has document:', ['hasDocument' => $hasDocument]);
-
-                    if (!$hasDocument) {
-                        return '<span class="text-muted" title="Document non généré">
-                            <i class="icon-close"></i>
-                        </span>';
+                    if (!in_array($type, ['facture', 'devis', 'avoir']) || !is_numeric($id)) {
+                        return '—';
                     }
 
-                    $routeParams = [
-                        'type' => $vente['type_document'],
-                        'id' => $vente['document_id']
-                    ];
-
-                    // \Log::info('Route parameters:', $routeParams);
-
-                    return "
-                        <a href='" . route('documents.show', $routeParams) . "'
-                        target='_blank'
-                        class='btn btn-sm btn-primary'
-                        title='Télécharger le PDF'>
-                        <i class='icon-doc'></i> PDF
-                        </a>
-                    ";
+                    return Button::make('Télécharger PDF')
+                        ->icon('cloud-download')
+                        ->class('btn btn-info btn-sm')
+                        ->method('documentsDownload')
+                        ->parameters([
+                            'type' => $type,
+                            'id' => $id,
+                        ])
+                        ->confirm('Voulez-vous vraiment télécharger ce PDF ?');
                 })
-                ->alignCenter()
-                ->width('120px')
-    
-                    
-                
-            
         ];
+
     }
 }

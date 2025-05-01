@@ -14,6 +14,7 @@ class Facture extends Model
     protected $primaryKey = 'id_facture';
 
     protected $fillable = [
+        'id_facture',
         'id_client',
         'id_user',
         'type_document', 

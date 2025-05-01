@@ -14,5 +14,5 @@ Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTab
     ->name('ventes.addToVentesTable');
 
 
-Route::get('/documents/{type}/{id}', [pdfController::class, 'show'])
-    ->name('documents.show');
+
+// Route::post ('/documents/download', [pdfController::class, 'downloadPDF'])->name('documents.download');

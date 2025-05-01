@@ -22,7 +22,8 @@ class PlatformScreen extends Screen
         'facture' => 'facture',
         'avoir' => 'avoir'
     ];
-    private function formatVentes($ventes)
+
+        private function formatVentes($ventes)
         {
             return $ventes->map(function ($vente) {
                 return [
@@ -51,8 +52,26 @@ class PlatformScreen extends Screen
      */
     public function query(): array
         {
-            $ventes = Ventes::with(['client', 'details.product', 'facture'])->latest()->get();
-            $formatted = $this->formatVentes($ventes);
+            $factures = Ventes::with(['client', 'details.product', 'facture'])
+            ->whereHas('facture', fn($q) => $q->where('type_document', self::DOCUMENT_TYPES['facture']))
+            ->latest()
+            ->take(5)
+            ->get();
+    
+            $devis = Ventes::with(['client', 'details.product', 'facture'])
+            ->whereHas('facture', fn($q) => $q->where('type_document', self::DOCUMENT_TYPES['devis']))
+            ->latest()
+            ->take(5)
+            ->get();
+    
+            $avoirs = Ventes::with(['client', 'details.product', 'facture'])
+            ->whereHas('facture', fn($q) => $q->where('type_document', self::DOCUMENT_TYPES['avoir']))
+            ->latest()
+            ->take(5)
+            ->get();
+
+            // $formatted = $this->formatVentes($ventes);
+
         
 
 
@@ -65,6 +84,11 @@ class PlatformScreen extends Screen
             $TotalGeneré=app(ChartController::class)->totalGenereDuMois();
             
             return [
+
+                'factures' => $this->formatVentes($factures),
+                'devis' => $this->formatVentes($devis),
+                'avoirs' => $this->formatVentes($avoirs),
+
                 'chartData' => [
                     [
                         'labels' => $ventesParProduit->pluck('nom')->toArray(),
@@ -84,17 +108,19 @@ class PlatformScreen extends Screen
                     ],
                 ],
 
-                'ventes' => $formatted,
-                'devis' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['devis']),
-                'factures' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['facture']),
-                'avoirs' => $formatted->filter(fn($v) => $v['type_document'] === self::DOCUMENT_TYPES['avoir']),
-
+                
                 'metrics' => [ 
-                    'Vente'    => ['value' => $MeilleurVente->produit, 'diff' => $MeilleurVente->total_ventes],
-                    'Client'   => ['value' => $MeilleurClient->client, 'diff' => $MeilleurClient->total_ventes],
-                    'Facture' => ['value' => $NombreFactures, 'diff' => 0],
+                    'Vente'    => ['value' => $MeilleurVente?->produit ?? 'Aucune vente', 'diff' => $MeilleurVente?->total_ventes ?? 0],
+                    'Client'   => ['value' => $MeilleurClient?->client ?? 'Aucun client', 'diff' => $MeilleurClient?->total_ventes ?? 0],
+                    'Facture' => ['value' => $NombreFactures ?? 0, 'diff' => 0],
                     'Total'    => $TotalGeneré->first()?->total_ventes ?? 0,
                 ],
+                
+                'ventesMensuelles' => $ventesMensuelles,
+                'MeilleurVente' => $MeilleurVente,
+                'MeilleurClient' => $MeilleurClient,
+                'NombreFactures' => $NombreFactures,
+                'TotalGeneré' => $TotalGeneré->first()?->total_ventes ?? 0, 
                 
             ];
         }
@@ -155,9 +181,6 @@ class PlatformScreen extends Screen
             ]),
             ClientChart::class,
             
-            
-            
-
         ];
     }
 }

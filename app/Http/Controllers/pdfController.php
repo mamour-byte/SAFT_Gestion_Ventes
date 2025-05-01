@@ -2,24 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Facture;
+use App\Models\Devis;
+use App\Models\Avoir;
+use PDF;
 
 class pdfController extends Controller
 {
-    public function show(string $type, string $id)
-    {
-        abort_unless(in_array($type, ['facture', 'devis', 'avoir']), 404);
-        
-        $model = match($type) {
-            'facture' => Facture::findOrFail($id),
-            'devis' => Devis::findOrFail($id),
-            'avoir' => Avoir::findOrFail($id),
-        };
+    public function downloadPDF($type, $id)
+        {
+            $document = null;
 
-        $pdf = PDF::loadView("pdf.{$type}", ['document' => $model]);
-        
-        return $pdf->stream("{$type}-{$model->numero}.pdf");
-    }
+            if ($type === 'facture') {
+                $document = Facture::find($id);
+            } elseif ($type === 'devis') {
+                $document = Devis::find($id);
+            } elseif ($type === 'avoir') {
+                $document = Avoir::find($id);
+            }
 
-        
+            if (!$document) {
+                Toast::error('Document non trouvé.');
+                return back();
+            }
+
+            $pdf = PDF::loadView('pdf.document', compact('document'));
+            return $pdf->download("{$type}_{$id}.pdf");
+}
 }

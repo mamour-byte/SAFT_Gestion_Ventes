@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8">
-    <title>Avoir</title>
+    <title>Devis</title>
     <style>
         body { font-family: sans-serif; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -10,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h1>Avoir {{ $facture->numero_facture }}</h1>
+    <h1>Devis {{ $facture->numero_facture }}</h1>
     <p><strong>Client :</strong> {{ $client->nom }}</p>
     <p><strong>Date de livraison :</strong> {{ $vente->date_livraison }}</p>
 
