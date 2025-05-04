@@ -33,11 +33,11 @@ class ProductListLayout extends Table
                     ->route('platform.product.edit', $product)),
 
             TD::make('Supprimer')
-                ->render(fn (Product $product) => Button::make()
-                    ->icon('trash')
-                    ->method('delete')
-                    ->route('platform.product.delete', $product)
-                    ->confirm('Voulez-vous vraiment supprimer ce produit ?')
+                ->render(fn (Product $product) =>
+                    Button::make()
+                        ->icon('trash')
+                        ->confirm('Voulez-vous vraiment supprimer ce Produit ?')
+                        ->method('delete', ['product' => $product->id_product])
                     ),
             
             

@@ -5,9 +5,11 @@ use Orchid\Screen\Actions\Link;
 use App\Models\Client;
 use App\Orchid\Layouts\ClientListLayout;
 use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Toast;
 
 class ClientsScreen extends Screen
 {
+    public $exists = true; 
     /**
      * Fetch data to be displayed on the screen.
      *
@@ -17,7 +19,7 @@ class ClientsScreen extends Screen
         {
             $clients = Client::paginate(10);
             return [
-                'clients' => $clients,
+                'clients' => Client::where('archived', 0)->paginate(10),
             ];
         }
 
@@ -59,5 +61,21 @@ class ClientsScreen extends Screen
     }
 
 
-    
+    /**
+     * Handle the deletion of a client.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delete(Client $client)
+        {
+            $client->archived = 1;
+            $client->save();
+
+            Toast::info('Client archivé avec succès.');
+        }
+
+        
+
 }

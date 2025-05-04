@@ -6,6 +6,7 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 use App\Models\Client;
+use Orchid\Screen\Actions\Button;
 
 class ClientListLayout extends Table
 {
@@ -47,14 +48,13 @@ class ClientListLayout extends Table
                     ->route('platform.clients.edit',  $client->id_client)                      
                 ),
 
-            TD::make('Supprimer')
-                ->render(fn (Client $client) => 
-                    Link::make()
-                    ->icon('trash')
-                    ->method('delete')
-                    ->confirm(__('Voulez-vous vraiment supprimer ce client ?'))
-                    ->parameters( $client->id_client),
-                ),
+                TD::make('Supprimer')
+                    ->render(fn (Client $client) =>
+                        Button::make()
+                            ->icon('trash')
+                            ->confirm('Voulez-vous vraiment supprimer ce client ?')
+                            ->method('delete', ['client' => $client->id_client])
+                    ),
             
 
         ];

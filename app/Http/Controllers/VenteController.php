@@ -92,6 +92,8 @@ class VenteController extends Controller
             return redirect()->route('platform.product.list')
                 ->with('success', 'Produit supprimé avec succès');
         }
+
+    
     
 
 
