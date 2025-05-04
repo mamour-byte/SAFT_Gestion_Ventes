@@ -7,6 +7,7 @@ use Orchid\Screen\TD;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions;
 use Orchid\Support\Facades\Toast;
+use App\Models\Client;
 
 class HistVentesRow extends Table
 {
@@ -18,8 +19,8 @@ class HistVentesRow extends Table
         return [
             TD::make('client', 'Client')
                 ->render(function ($item) {
-                    $client = \App\Models\Client::find($item['id_client']);
-                    return $client ? $client->nom : 'Client inconnu';
+                    return Client::where('id_client', $item['id_client'])
+                            ->value('nom') ?? 'Client inconnu';
                 }),
 
             TD::make('produits', 'Produits')
@@ -30,22 +31,16 @@ class HistVentesRow extends Table
                 }),
                        
                 
-            TD::make('type_document', 'Type')
-                    ->render(function ($vente) {
-                        return isset($vente['type_document']) ? ucfirst($vente['type_document']) : '—';
-                    }),            
+            TD::make('date_livraison', 'TVA Applicable')
+                ->render(function ($item) {
+                    return isset($item['facture']['tva']) && $item['facture']['tva'] ? 'Oui' : 'Non';
+                }),            
             
                     
             TD::make('numero_facture', 'N° Document')
                 ->render(function ($item) {
                     return $item['numero_facture'] ?? '—';
                 }),
-            
-            TD::make('date_livraison', 'TVA Applicable')
-                ->render(function ($item) {
-                    return isset($item['tva']) && $item['tva'] ? 'Oui' : 'Non';
-                }),
-
             
             TD::make('total', 'Total TTC')
                 ->render(function ($item) {

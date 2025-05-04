@@ -13,6 +13,3 @@ use App\Http\Controllers\pdfController;
 Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTable'])
     ->name('ventes.addToVentesTable');
 
-
-
-// Route::post ('/documents/download', [pdfController::class, 'downloadPDF'])->name('documents.download');

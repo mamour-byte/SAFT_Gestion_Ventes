@@ -15,5 +15,6 @@ class Client extends Model
         'email',
         'telephone',
         'adresse',
+        'archived'
     ];
 }

@@ -18,6 +18,8 @@ class Facture extends Model
         'id_client',
         'id_user',
         'type_document', 
+        'tva',
+        'numero_facture',
         'statut',
     ];
 

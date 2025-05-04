@@ -17,7 +17,7 @@ class Ventes extends Model
 
     public function client()
     {
-        return $this->belongsTo(Facture::class, 'id_facture', 'id_facture');
+        return $this->belongsTo(Client::class, 'id_client', 'id_client');
     }
 
     public function facture()

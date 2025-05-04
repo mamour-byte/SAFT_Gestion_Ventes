@@ -45,6 +45,7 @@ class VenteController extends Controller
                 'id_user' => $request->user()->id,
                 'type_document' => $typeDocument,
                 'statut' => $typeDocument === 'devis' ? 'En attente' : 'Validé',
+                'tva' => $venteData['tva'] ?? false,
             ]);
 
             // Création de la vente

@@ -16,6 +16,7 @@ class Product extends Model
         'description',
         'prix_unitaire',
         'quantite_stock',
+        'archived'
     ];
 
     public function details()

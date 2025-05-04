@@ -18,14 +18,18 @@ class NouvVentesRow extends Rows
         return [
             Select::make('vente.id_client')
                 ->title('Client')
-                ->options(Client::pluck('nom', 'id_client'))
+                ->options(
+                    Client::where('archived', 0)->pluck('nom', 'id_client')
+                )
                 ->required()
                 ->help('Sélectionnez le client'),
                 
             Group::make([
                 Select::make('vente.produits')   
                     ->title('Produits')
-                    ->options(Product::where('quantite_stock', '>', 0)->pluck('nom', 'id_product'))
+                    ->options(Product::where('quantite_stock', '>', 0)
+                    ->where('archived', 0)
+                    ->pluck('nom', 'id_product'))
                     ->multiple()
                     ->required()
                     ->help('Sélectionnez les produits (Ctrl+clic pour multiple)'),
@@ -50,8 +54,7 @@ class NouvVentesRow extends Rows
 
             CheckBox::make('vente.tva')
                 ->sendTrueOrFalse()
-                ->title('TVA Applicable (18%)')
-                ->value(true),
+                ->title('TVA Applicable (18%)'),
                 
             Button::make('Nouvelle Vente')
                 ->method('addToVentesTable')
