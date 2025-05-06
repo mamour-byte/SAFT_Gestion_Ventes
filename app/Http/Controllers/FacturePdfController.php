@@ -14,26 +14,30 @@ class FacturePdfController extends Controller
         $vente = Ventes::with(['client', 'details.product', 'facture'])->findOrFail($id);
 
         $produitsArray = $vente->details->map(function ($item) {
+            $quantity = $item->quantite_vendue ?? 0;  // ← Correction ici
+            $price = $item->product->prix_unitaire ?? 0;
+        
             return [
                 'nom' => $item->product->nom ?? 'Produit inconnu',
-                'quantity' => $item->quantity,
-                'prix_unitaire' => $item->product->price,
-                'total_ligne' => $item->quantity * $item->product->price
+                'quantity' => $quantity,
+                'prix_unitaire' => $price,
+                'total_ligne' => $quantity * $price
             ];
         });
-
+        
         $subtotal = $vente->details->sum(function ($item) {
-            return $item->quantity * $item->product->price;
+            return $item->quantite_vendue * ($item->product->prix_unitaire ?? 0);  // ← Correction ici aussi
         });
 
-        $taxRate = 20;
+        $taxRate = 18; // Taux de TVA en pourcentage
         $taxAmount = $subtotal * ($taxRate / 100);
         $totalAmount = $subtotal + $taxAmount;
 
+
         $pdfData = [
-            'numero_facture' => $vente->facture->numero_facture ?? 'NON-RENSEIGNÉ',
-            'date_facture' => optional($vente->facture->date_facture)->format('d/m/Y') ?? 'NON-RENSEIGNÉ',
-            'date_echeance' => optional($vente->facture->date_echeance)->format('d/m/Y') ?? 'NON-RENSEIGNÉ',
+            'numero_facture' => $vente->facture->numero_facture ?? '-',
+            'date_facture' => optional($vente->facture->date_facture)->format('d/m/Y') ?? '-',
+            'date_echeance' => optional($vente->facture->date_echeance)->format('d/m/Y') ?? '-',
 
             'client_nom' => $vente->client->nom ?? '',
             'client_prenom' => $vente->client->prenom ?? '',

@@ -1,58 +1,110 @@
-{{-- resources/views/orchid/preview-pdf.blade.php --}}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Facture #{{ $numero_facture }}</title>
+    <title>Facture n° {{ $numero_facture }}</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
-        h1, h2, h3 { margin-bottom: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .text-right { text-align: right; }
-        .company-info, .client-info { margin-bottom: 15px; }
-        .totals td { border: none; }
-        .totals { margin-top: 20px; width: auto; float: right; }
-        .footer { margin-top: 50px; font-size: 11px; text-align: center; color: #777; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .company, .client {
+            width: 48%;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .company {
+            float: left;
+        }
+        .client {
+            float: right;
+            text-align: right;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        table th, table td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
+        .totals {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .totals td {
+            padding: 8px;
+        }
+        .totals .label {
+            text-align: right;
+            width: 80%;
+        }
+        .totals .value {
+            text-align: right;
+            width: 20%;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        .clearfix {
+            clear: both;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Facture #{{ $numero_facture }}</h1>
+    <h1>FACTURE</h1>
+    <h2>Facture n° {{ $numero_facture }}</h2>
 
-    <div class="company-info">
-        <strong>{{ config('app.name') }}</strong><br>
+    <div class="company">
+        <strong>Votre Entreprise</strong><br>
         123 Rue de la Société<br>
-        Tél : 01 23 45 67 89<br>
-        Email : contact@entreprise.com<br>
-        SIRET : 123 456 789 00010 | TVA : FR123456789
+        75000 Paris<br>
+        Tél: 01 23 45 67 89<br>
+        Email: contact@entreprise.com
     </div>
 
-    <div class="client-info">
-        <h3>Client</h3>
+    <div class="client">
+        <strong>Client :</strong><br>
         {{ $client_nom }} {{ $client_prenom }}<br>
         {{ $client_adresse }}<br>
-        Téléphone : {{ $client_telephone }}<br>
-        Email : {{ $client_email }}<br>
-        SIRET : {{ $client_siret }}
+        Tél: {{ $client_telephone }}<br>
+        Email: {{ $client_email }}<br>
+        SIRET: {{ $client_siret }}
     </div>
 
-    <p><strong>Date facture :</strong> {{ $date_facture }}</p>
-    <p><strong>Date échéance :</strong> {{ $date_echeance }}</p>
+    <div class="clearfix"></div>
 
-    <h3>Détails de la facture</h3>
+    <p><strong>Date de Facture :</strong> {{ $date_facture }}<br>
+    <strong>Date d’échéance :</strong> {{ $date_echeance }}</p>
+
     <table>
         <thead>
             <tr>
                 <th>Produit</th>
                 <th>Quantité</th>
                 <th>Prix unitaire (€)</th>
-                <th>Total (€)</th>
+                <th>Total ligne (€)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($produits as $produit)
+            @foreach ($produits as $produit)
                 <tr>
                     <td>{{ $produit['nom'] }}</td>
                     <td>{{ $produit['quantity'] }}</td>
@@ -65,22 +117,22 @@
 
     <table class="totals">
         <tr>
-            <td><strong>Sous-total :</strong></td>
-            <td class="text-right">{{ number_format($subtotal, 2, ',', ' ') }} €</td>
+            <td class="label"><strong>Sous-total (HT)</strong></td>
+            <td class="value">{{ number_format($subtotal, 2, ',', ' ') }} €</td>
         </tr>
         <tr>
-            <td><strong>TVA ({{ $taxRate }}%) :</strong></td>
-            <td class="text-right">{{ number_format($taxAmount, 2, ',', ' ') }} €</td>
+            <td class="label"><strong>TVA ({{ $taxRate }}%)</strong></td>
+            <td class="value">{{ number_format($taxAmount, 2, ',', ' ') }} €</td>
         </tr>
         <tr>
-            <td><strong>Total TTC :</strong></td>
-            <td class="text-right"><strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong></td>
+            <td class="label"><strong>Total TTC</strong></td>
+            <td class="value"><strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong></td>
         </tr>
     </table>
-
     <div class="footer">
-        IBAN : FR76 XXXX XXXX XXXX XXXX XXXX XXX | BIC : XXXXXXXXXXX<br>
-        Merci pour votre confiance !
+        SAFT - SN Dakar - 12500 Yoff<br>
+        Tél: 33 XXX XX XX - Email: services@saft.com - SIRET: XXX XXX XXX XX<br>
+        Merci pour votre confiance.
     </div>
 
 </body>

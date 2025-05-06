@@ -135,3 +135,5 @@ Route::screen('users', UserListScreen::class)
 // -----------------Platform Facture----------------------
 Route::screen('facture/preview', FacturePreviewScreen::class)->name('platform.facture.preview');
 Route::get('facture/download', [FactureController::class, 'download'])->name('platform.facture.download');
+
+
