@@ -15,3 +15,6 @@ Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTab
     ->name('ventes.addToVentesTable');
 
 Route::get('/facture/pdf/{id}', [FacturePdfController::class, 'generate'])->name('preview-pdf.pdf');
+
+Route::post('/ventes/update', [VenteController::class, 'transformQuoteToInvoice'])
+    ->name('ventes.transformQuoteToInvoice');

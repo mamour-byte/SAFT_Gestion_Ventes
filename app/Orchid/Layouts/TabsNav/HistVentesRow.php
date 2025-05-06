@@ -27,10 +27,10 @@ class HistVentesRow extends Table
                     return $vente->details->map(function ($detail) {
                         $product = $detail->product;
                         if (!$product) {
-                            return 'Produit supprimé (x' . $detail->quantite . ')';
+                            return 'Produit supprimé (x' . $detail->quantite_vendue . ')';
                         }
                         return $product->nom
-                            . ' (x' . $detail->quantite . ') - '
+                            . ' (x' . $detail->quantite_vendue . ') - '
                             . number_format($product->prix_unitaire) . ' F CFA';
                     })->implode('<br>');
                 }),
@@ -55,7 +55,6 @@ class HistVentesRow extends Table
 
             TD::make('actions', 'Actions')
                 ->render(function (Ventes $vente) {
-                    $buttons = [];
 
                     $buttons[] = Button::make('Supprimer')
                         ->method('removeFromVentesTable')
@@ -64,9 +63,8 @@ class HistVentesRow extends Table
                         ->confirm('Voulez-vous vraiment supprimer cette vente?')
                         ->render();
 
-                    $buttons[] = Button::make('Modifier')
-                        ->method('editVente')
-                        ->parameters(['id' => $vente->id])
+                    $buttons[] = Link::make('Modifier')
+                        ->route('platform.ventes.edit', $vente->id_vente) 
                         ->class('btn btn-warning btn-sm')
                         ->render();
 
@@ -87,6 +85,7 @@ class HistVentesRow extends Table
                     $type = $vente->facture->type_document ?? 'facture';
             
                     return Link::make('Voir PDF')
+                        ->icon('')
                         ->route('platform.facture.preview', [
                             'id' => $vente->id_vente,
                             'type' => $type

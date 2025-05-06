@@ -14,10 +14,6 @@ use Illuminate\Http\RedirectResponse;
 
 class ProductEditScreen extends Screen
 {
-    /**
-     * @var Product
-     */
-    public $product;
 
     /**
      * Fetch data to be displayed on the screen.

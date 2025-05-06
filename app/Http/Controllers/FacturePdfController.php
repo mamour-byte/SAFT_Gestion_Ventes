@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace App\Http\Controllers;
 
@@ -14,9 +14,9 @@ class FacturePdfController extends Controller
         $vente = Ventes::with(['client', 'details.product', 'facture'])->findOrFail($id);
 
         $produitsArray = $vente->details->map(function ($item) {
-            $quantity = $item->quantite_vendue ?? 0;  // ← Correction ici
+            $quantity = $item->quantite_vendue ?? 0; 
             $price = $item->product->prix_unitaire ?? 0;
-        
+
             return [
                 'nom' => $item->product->nom ?? 'Produit inconnu',
                 'quantity' => $quantity,
@@ -24,15 +24,20 @@ class FacturePdfController extends Controller
                 'total_ligne' => $quantity * $price
             ];
         });
-        
+
         $subtotal = $vente->details->sum(function ($item) {
-            return $item->quantite_vendue * ($item->product->prix_unitaire ?? 0);  // ← Correction ici aussi
+            return $item->quantite_vendue * ($item->product->prix_unitaire ?? 0);
         });
 
-        $taxRate = 18; // Taux de TVA en pourcentage
-        $taxAmount = $subtotal * ($taxRate / 100);
+        $taxRate = 18; // Taux de TVA en %
+        $factureTvaIncluse = $vente->facture->tva ?? false; // ← On récupère tva (boolean)
+
+        // Si TVA incluse (tva == 1), on applique la TVA. Sinon pas de TVA
+        $taxAmount = $factureTvaIncluse ? $subtotal * ($taxRate / 100) : 0;
         $totalAmount = $subtotal + $taxAmount;
 
+        // Message lisible pour le PDF (ex : "TVA incluse" ou "TVA non incluse")
+        $tva_status = $factureTvaIncluse ? 'TVA incluse' : 'TVA non incluse';
 
         $pdfData = [
             'numero_facture' => $vente->facture->numero_facture ?? '-',
@@ -51,6 +56,7 @@ class FacturePdfController extends Controller
             'taxRate' => $taxRate,
             'taxAmount' => $taxAmount,
             'totalAmount' => $totalAmount,
+            'tva_status' => $tva_status,  // ← On ajoute ça pour le PDF
         ];
 
         $pdf = PDF::loadView('pdf.facturepdf', $pdfData);

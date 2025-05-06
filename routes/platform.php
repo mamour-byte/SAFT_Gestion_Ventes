@@ -20,6 +20,8 @@ use App\Orchid\Screens\FactureScreen;
 use App\Orchid\Screens\DashbordScreen;
 use App\Http\Controllers\pdfController;
 use App\Orchid\Screens\FacturePreviewScreen;
+use App\Orchid\Screens\VenteUpdateScreen;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +101,13 @@ Route::screen('/ventes', VentesScreen::class)->name('platform.ventes')
         ->parent('platform.index')
         ->push('Ventes', route('platform.ventes'));
 });
+//------------------------update vente----------------------
+Route::screen('ventes/{vente}/edit', VenteUpdateScreen::class)->name('platform.ventes.edit')
+    ->breadcrumbs(function (Trail $trail, $vente) {
+        return $trail
+            ->parent('platform.ventes')
+            ->push('Editer Vente', route('platform.ventes.edit', $vente));
+    });
 
 
 
@@ -135,5 +144,6 @@ Route::screen('users', UserListScreen::class)
 // -----------------Platform Facture----------------------
 Route::screen('facture/preview', FacturePreviewScreen::class)->name('platform.facture.preview');
 Route::get('facture/download', [FactureController::class, 'download'])->name('platform.facture.download');
+
 
 

@@ -8,6 +8,6 @@
 <body>
     <h2>Aperçu du document PDF</h2>
 
-    <iframe src="{{ route('preview-pdf.pdf', ['id' => request()->id ?? request()->get('venteId')]) }}" width="100%" height="800px"></iframe>
+    <iframe src="{{ route('preview-pdf.pdf', ['id' => request()->id ?? request()->get('venteId')]) }}" width="90%" height="800px"></iframe>
 </body>
 </html>

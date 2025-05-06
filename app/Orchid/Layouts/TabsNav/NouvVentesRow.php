@@ -8,6 +8,7 @@ use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Fields\Switcher;
 use App\Models\Client;
 use App\Models\Product;
 
@@ -52,9 +53,9 @@ class NouvVentesRow extends Rows
                 ->required()
                 ->help('Choisissez le type de document'),
 
-            CheckBox::make('vente.tva')
-                ->sendTrueOrFalse()
-                ->title('TVA Applicable (18%)'),
+                Switcher::make('vente.tva')
+                ->title('Appliquer la TVA 18%')
+                ->sendTrueOrFalse(),
                 
             Button::make('Nouvelle Vente')
                 ->method('addToVentesTable')

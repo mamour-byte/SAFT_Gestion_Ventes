@@ -23,7 +23,8 @@ return new class extends Migration
             $table->enum('statut', ['Validé','En attente','Annulé'])->default('En attente');
             $table->timestamps();
 
-            $table->string('numero_facture')->unique();
+            $table->string('numero_facture')->nullable()->unique();
+            
             $table->boolean('tva')->default(false);
 
             $table->enum('type_document', ['facture', 'devis','avoir'])->default('facture');

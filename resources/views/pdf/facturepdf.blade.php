@@ -41,13 +41,17 @@
         .totals {
             margin-top: 20px;
             width: 100%;
+            border: 1px solid #999;
+            border-collapse: collapse;
         }
         .totals td {
             padding: 8px;
+            border: 1px solid #999;
         }
         .totals .label {
             text-align: right;
             width: 80%;
+            background-color: #f9f9f9;
         }
         .totals .value {
             text-align: right;
@@ -64,6 +68,11 @@
         .clearfix {
             clear: both;
             margin-bottom: 20px;
+        }
+        .tva-status {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: right;
         }
     </style>
 </head>
@@ -99,8 +108,8 @@
             <tr>
                 <th>Produit</th>
                 <th>Quantité</th>
-                <th>Prix unitaire (€)</th>
-                <th>Total ligne (€)</th>
+                <th>Prix unitaire (F CFA)</th>
+                <th>Total ligne (F CFA)</th>
             </tr>
         </thead>
         <tbody>
@@ -118,17 +127,20 @@
     <table class="totals">
         <tr>
             <td class="label"><strong>Sous-total (HT)</strong></td>
-            <td class="value">{{ number_format($subtotal, 2, ',', ' ') }} €</td>
+            <td class="value">{{ number_format($subtotal, 2, ',', ' ') }} F CFA</td>
         </tr>
         <tr>
             <td class="label"><strong>TVA ({{ $taxRate }}%)</strong></td>
-            <td class="value">{{ number_format($taxAmount, 2, ',', ' ') }} €</td>
+            <td class="value">{{ number_format($taxAmount, 2, ',', ' ') }} F CFA</td>
         </tr>
         <tr>
             <td class="label"><strong>Total TTC</strong></td>
-            <td class="value"><strong>{{ number_format($totalAmount, 2, ',', ' ') }} €</strong></td>
+            <td class="value"><strong>{{ number_format($totalAmount, 2, ',', ' ') }} F CFA</strong></td>
         </tr>
     </table>
+
+    <p class="tva-status">{{ $tva_status }}</p>
+
     <div class="footer">
         SAFT - SN Dakar - 12500 Yoff<br>
         Tél: 33 XXX XX XX - Email: services@saft.com - SIRET: XXX XXX XXX XX<br>
