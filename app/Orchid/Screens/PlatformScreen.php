@@ -110,14 +110,14 @@ class PlatformScreen extends Screen
                     'Vente'    => ['value' => $MeilleurVente?->produit ?? 'Aucune vente', 'diff' => $MeilleurVente?->total_ventes ?? 0],
                     'Client'   => ['value' => $MeilleurClient?->client ?? 'Aucun client', 'diff' => $MeilleurClient?->total_ventes ?? 0],
                     'Facture' => ['value' => $NombreFactures ?? 0, 'diff' => 0],
-                    'Total'    => $TotalGeneré->first()?->total_ventes ?? 0,
+                    'Total'    => $TotalGeneré ?? 0,
                 ],
                 
                 'ventesMensuelles' => $ventesMensuelles,
                 'MeilleurVente' => $MeilleurVente,
                 'MeilleurClient' => $MeilleurClient,
                 'NombreFactures' => $NombreFactures,
-                'TotalGeneré' => $TotalGeneré->first()?->total_ventes ?? 0, 
+                'TotalGeneré' => $TotalGeneré ?? 0, 
                 
             ];
         }
@@ -159,7 +159,7 @@ class PlatformScreen extends Screen
             Layout::metrics([
                 'Meilleur Vente'    => 'metrics.Vente',
                 'Meilleur Client' => 'metrics.Client',
-                'Nombre de Factures du mois' => 'metrics.Facture',
+                'Nombre de Ventes du mois' => 'metrics.Facture',
                 'Total Generé' => 'metrics.Total',
             ]),
 

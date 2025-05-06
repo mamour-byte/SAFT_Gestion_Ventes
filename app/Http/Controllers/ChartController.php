@@ -59,17 +59,16 @@ class ChartController extends Controller
             ->get();
     }
 
-    public function ventesParJourDuMois()
-    {
-        return DB::table('ventes')
-            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
-            ->selectRaw('DATE(details_ventes.date_vente) as date, COUNT(ventes.id_vente) as total_ventes, SUM(details_ventes.quantite_vendue) as total_quantite')
-            ->whereMonth('details_ventes.date_vente', now()->month)
-            ->whereYear('details_ventes.date_vente', now()->year)
-            ->groupBy('date')
-            ->orderBy('date', 'ASC')
-            ->get();
-    }
+        public function ventesParJourDuMois()
+            {
+                return DB::table('ventes')
+                    ->selectRaw('DATE(created_at) as date, COUNT(id_vente) as total_ventes')
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->groupBy('date')
+                    ->orderBy('date', 'ASC')
+                    ->get();
+            }
 
     public function ventesParMois($startDate = null, $endDate = null)
     {
@@ -118,29 +117,22 @@ class ChartController extends Controller
             ->first();
     }
 
-    public function NombredeFacturesDuMois($startDate = null, $endDate = null)
-    {
-        $query = Ventes::query()
-            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
-            ->when($startDate, fn($q) => $q->whereDate('ventes.created_at', '>=', $startDate))
-            ->when($endDate, fn($q) => $q->whereDate('ventes.created_at', '<=', $endDate))
-            ->count();
+    public function NombredeFacturesDuMois($mois = null, $annee = null)
+        {
+            $mois = $mois ?? now()->month;
+            $annee = $annee ?? now()->year;
 
-        return $query;
-    }
+            return Ventes::whereMonth('created_at', $mois)
+                        ->whereYear('created_at', $annee)
+                        ->count();
+        }
 
-    public function totalGenereDuMois($startDate = null, $endDate = null)
-    {
-        $this->setDefaultDateRange($startDate, $endDate);
-
-        $query = Ventes::query()
-            ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.prix_total) as total_ventes')
-            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
-
-        $this->applyDateFilter($query, $startDate, $endDate);
-
-        return $query->groupBy('mois')
-            ->orderBy('mois', 'ASC')
-            ->get();
-    }
+        public function totalGenereDuMois()
+            {
+                return DB::table('details_ventes')
+                    ->selectRaw('SUM(prix_total) as total_ventes')
+                    ->whereMonth('date_vente', now()->month)
+                    ->whereYear('date_vente', now()->year)
+                    ->value('total_ventes') ?? 0; // Retxourne 0 si aucune vente
+            }
 }

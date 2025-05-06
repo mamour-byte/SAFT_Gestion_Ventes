@@ -29,14 +29,12 @@ class FacturePdfController extends Controller
             return $item->quantite_vendue * ($item->product->prix_unitaire ?? 0);
         });
 
-        $taxRate = 18; // Taux de TVA en %
-        $factureTvaIncluse = $vente->facture->tva ?? false; // ← On récupère tva (boolean)
+        $taxRate = 18;
+        $factureTvaIncluse = $vente->facture->tva ?? false; 
 
-        // Si TVA incluse (tva == 1), on applique la TVA. Sinon pas de TVA
         $taxAmount = $factureTvaIncluse ? $subtotal * ($taxRate / 100) : 0;
         $totalAmount = $subtotal + $taxAmount;
 
-        // Message lisible pour le PDF (ex : "TVA incluse" ou "TVA non incluse")
         $tva_status = $factureTvaIncluse ? 'TVA incluse' : 'TVA non incluse';
 
         $pdfData = [
@@ -56,10 +54,13 @@ class FacturePdfController extends Controller
             'taxRate' => $taxRate,
             'taxAmount' => $taxAmount,
             'totalAmount' => $totalAmount,
-            'tva_status' => $tva_status,  // ← On ajoute ça pour le PDF
+            'tva_status' => $tva_status,
+
+            'type_document' => ucfirst($vente->facture->type_document ?? '-'), // ← ICI ajouté
         ];
 
         $pdf = PDF::loadView('pdf.facturepdf', $pdfData);
-        return $pdf->stream('facturepdf.pdf'); 
+        return $pdf->stream('Facture ' . $vente->client->nom . ' ' . now()->translatedFormat('F Y') . '.pdf');
+
     }
 }

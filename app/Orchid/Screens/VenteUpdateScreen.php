@@ -42,11 +42,13 @@ class VenteUpdateScreen extends Screen
                 Relation::make('vente.id_client')
                     ->title('Client')
                     ->fromModel(Client::class, 'nom')
-                    ->required(),
+                    ->required()
+                    ->value($this->vente->id_client),
 
                 Switcher::make('vente.tva')
                     ->title('Appliquer la TVA')
-                    ->sendTrueOrFalse(),
+                    ->sendTrueOrFalse()
+                    ->value($this->vente->tva),
 
                 Input::make('vente.facture.numero_facture')
                     ->title('Numéro de Facture')
@@ -54,16 +56,15 @@ class VenteUpdateScreen extends Screen
 
                 Select::make('vente.type_document')
                     ->title('Type de document')
-                    ->fromModel(Facture::class, 'type_document')
                     ->options([
                         'devis' => 'Devis',
                         'facture' => 'Facture',
                         'avoir' => 'Avoir',
                     ])
                     ->required()
-                    ->help('Choisissez le type de document'),
-
-                Input::make('vente.id_vente')->type('hidden'),
+                    ->help('Choisissez le type de document')
+                    ->value(optional($this->vente->facture)->type_document), // ← Ajouter cette ligne
+                
 
             ]),
 
@@ -72,13 +73,14 @@ class VenteUpdateScreen extends Screen
                     ->title('Produits')
                     ->fromModel(Product::class, 'nom')
                     ->multiple()
-                    ->help('Sélectionnez les produits de la vente'),
+                    ->help('Sélectionnez les produits de la vente')
+                    ->value($this->vente->details->pluck('id_product')->toArray()), // ← Afficher les produits associés
 
                 Input::make('quantites')
                     ->title('Quantités (séparées par virgule)')
-                    ->fromModel(DetailVente::class, 'quantite_vendue')
                     ->placeholder('Exemple : 2,3,1')
-                    ->help('Quantité correspondante à chaque produit sélectionné'),
+                    ->help('Quantité correspondante à chaque produit sélectionné')
+                    ->value($this->vente->details->pluck('quantite_vendue')->implode(',')), 
 
                 
             ])

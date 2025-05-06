@@ -78,8 +78,8 @@
 </head>
 <body>
 
-    <h1>FACTURE</h1>
-    <h2>Facture n° {{ $numero_facture }}</h2>
+    <h1>{{$type_document}}</h1>
+    <h2>n° {{ $numero_facture }}</h2>
 
     <div class="company">
         <strong>Votre Entreprise</strong><br>

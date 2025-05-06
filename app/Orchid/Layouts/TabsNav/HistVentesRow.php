@@ -68,15 +68,6 @@ class HistVentesRow extends Table
                         ->class('btn btn-warning btn-sm')
                         ->render();
 
-                    if (in_array($vente->facture->type_document ?? '', ['devis', 'avoir'])) {
-                        $buttons[] = Button::make('Transformer en facture')
-                            ->method('transformQuoteToInvoice')
-                            ->parameters(['id' => $vente->id])
-                            ->class('btn btn-primary btn-sm')
-                            ->confirm('Confirmer la transformation de ce document en facture ?')
-                            ->render();
-                    }
-
                     return implode(' ', $buttons);
                 }),
 
@@ -86,6 +77,7 @@ class HistVentesRow extends Table
             
                     return Link::make('Voir PDF')
                         ->icon('')
+                        ->class('btn btn-success')
                         ->route('platform.facture.preview', [
                             'id' => $vente->id_vente,
                             'type' => $type
