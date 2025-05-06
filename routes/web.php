@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VenteController;
 use App\Http\Controllers\pdfController;
+use App\Http\Controllers\FacturePdfController;
 
 
 // Route::get('/', function () {
@@ -13,3 +14,4 @@ use App\Http\Controllers\pdfController;
 Route::post('/ventes/addToVentesTable', [VenteController::class, 'addToVentesTable'])
     ->name('ventes.addToVentesTable');
 
+Route::get('/facture/pdf/{id}', [FacturePdfController::class, 'generate'])->name('preview-pdf.pdf');

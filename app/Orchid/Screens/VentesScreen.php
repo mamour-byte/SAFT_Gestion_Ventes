@@ -13,20 +13,24 @@ use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
 use App\Models\Ventes;
 use \App\Http\Controllers\pdfController;
-
-
+use Orchid\Screen\Actions\Button;
+use Orchid\Screen\Actions\Link;
 use Orchid\Support\Facades\Toast;
 use PDF;
-use Orchid\Screen\Actions\Button;
 
 class VentesScreen extends Screen
 {
+    /**
+     * Query data.
+     *
+     * @return array
+     */
+    public $exists = true;
 
 
     public function commandBar(): iterable
         {
-            return [ 
-            ];
+            return [];
         }
 
 
@@ -43,39 +47,32 @@ class VentesScreen extends Screen
 
 
         public function query(): array
-        {
-            $ventes = Ventes::with(['client', 'details.product', 'facture'])
-                ->where('id_user', auth()->user()->id)
-                ->latest()
-                ->get();
-                
-        
-            $formatted = $ventes->map(function ($vente) {
+            {
+                $baseQuery = Ventes::with(['client', 'details.product', 'facture'])
+                    ->where('id_user', auth()->user()->id);
+
                 return [
-                    'id' => $vente->id_vente, // Utilisez 'id_vente' comme clé primaire
-                    'document_id' => $vente->facture['id_facture'] ?? $vente->id_vente, // ID du document
-                    'id_client' => $vente->id_client,
-                    'client_nom' => $vente->client['nom'] ?? 'Client inconnu',
-                    'produits' => $vente->details->map(function ($detail) {
-                        return [
-                            'nom' => $detail->product->nom ?? 'Produit inconnu',
-                            'quantite' => $detail->quantite_vendue ?? 0,
-                            'prix_unitaire' => $detail->product->prix_unitaire ?? 0,
-                        ];
-                    })->values()->all(),
-                    'type_document' => $vente->facture['type_document'] ?? 'facture', // Type du document
-                    'numero_facture' => $vente->facture['numero_facture'] ?? null,
-                    'date_livraison' => $vente->date_vente ?? null,
+                    'ventes' => (clone $baseQuery)
+                        ->latest()
+                        ->paginate(10),
+
+                    'devis' => (clone $baseQuery)
+                        ->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))
+                        ->latest()
+                        ->paginate(10),
+
+                    'factures' => (clone $baseQuery)
+                        ->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))
+                        ->latest()
+                        ->paginate(10),
+
+                    'avoirs' => (clone $baseQuery)
+                        ->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))
+                        ->latest()
+                        ->paginate(10),
                 ];
-            });
-        
-            return [
-                'ventes' => $formatted,
-                'devis' => $formatted->filter(fn($v) => $v['type_document'] === 'devis'),
-                'factures' => $formatted->filter(fn($v) => $v['type_document'] === 'facture'),
-                'avoirs' => $formatted->filter(fn($v) => $v['type_document'] === 'avoir'),
-            ];
-        }
+            }
+
 
 
     public function layout(): array
@@ -105,19 +102,8 @@ class VentesScreen extends Screen
         {
             return (new VenteController)->addToVentesTable($request);
         }
-
-        public function removeFromVentesTable(Request $request)
-        {
-            return (new VenteController)->removeFromVentesTable($request);
-        }
-
-        public function documentsDownload(Request $request)
-        {
-            // dd($request->all());
-    
-            Toast::info('Méthode documentsDownload appelée : Type=' . $request->type . ' | ID=' . $request->id);
-            return app(pdfController::class)->downloadPDF($request);
-        }
-
-
+        
+        
+        
+        
 }

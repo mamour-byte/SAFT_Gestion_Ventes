@@ -1,109 +1,100 @@
 <?php
+//
 
 namespace App\Orchid\Layouts\TabsNav;
-
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 use Orchid\Screen\Actions\Button;
-use Orchid\Screen\Actions;
-use Orchid\Support\Facades\Toast;
-use App\Models\Client;
+use App\Models\Ventes;
+use App\Models\Facture;
+
 
 class HistVentesRow extends Table
 {
     protected $target = 'ventes';
 
-
     protected function columns(): array
     {
         return [
             TD::make('client', 'Client')
-                ->render(function ($item) {
-                    return Client::where('id_client', $item['id_client'])
-                            ->value('nom') ?? 'Client inconnu';
+                ->render(function (Ventes $vente) {
+                    return $vente->client ? $vente->client->nom : 'Client inconnu';
                 }),
 
             TD::make('produits', 'Produits')
-                ->render(function ($item) {
-                    return collect($item['produits'])->map(function ($produit) {
-                        return $produit['nom'] . ' (x' . $produit['quantite'] . ') - ' . number_format($produit['prix_unitaire'] ) . 'f cfa';
+                ->render(function (Ventes $vente) {
+                    return $vente->details->map(function ($detail) {
+                        $product = $detail->product;
+                        if (!$product) {
+                            return 'Produit supprimé (x' . $detail->quantite . ')';
+                        }
+                        return $product->nom
+                            . ' (x' . $detail->quantite . ') - '
+                            . number_format($product->prix_unitaire) . ' F CFA';
                     })->implode('<br>');
                 }),
-                       
-                
-            TD::make('date_livraison', 'TVA Applicable')
-                ->render(function ($item) {
-                    return isset($item['facture']['tva']) && $item['facture']['tva'] ? 'Oui' : 'Non';
-                }),            
-            
-                    
-            TD::make('numero_facture', 'N° Document')
-                ->render(function ($item) {
-                    return $item['numero_facture'] ?? '—';
-                }),
-            
-            TD::make('total', 'Total TTC')
-                ->render(function ($item) {
-                    $total = collect($item['produits'])->sum(function ($produit) {
-                        return $produit['quantite'] * $produit['prix_unitaire']* 1.18;
-                    });
-                    return number_format($total ) . 'f cfa';
+
+            TD::make('tva', 'TVA Applicable')
+                ->render(function (Ventes $vente) {
+                    return ($vente->facture && $vente->facture->tva) ? 'Oui' : 'Non';
                 }),
 
-                
+            TD::make('Type de document', 'Type de document')
+                ->render(function (Ventes $vente) {
+                    return $vente->facture ? $vente->facture->type_document : 'Non défini';
+                }),
+
+                TD::make('total', 'Total TTC')
+                ->render(function (Ventes $vente) {
+                    $total = $vente->details->sum(function ($detail) {
+                        return $detail->prix_total ?? 0;
+                    });
+                    return number_format($total) . ' F CFA';
+                }),
+
             TD::make('actions', 'Actions')
-                ->render(function ($item, $key) {
+                ->render(function (Ventes $vente) {
                     $buttons = [];
-            
-                    // Supprimer
+
                     $buttons[] = Button::make('Supprimer')
                         ->method('removeFromVentesTable')
-                        ->parameters(['index' => $key])
+                        ->parameters(['id' => $vente->id])
                         ->class('btn btn-danger btn-sm')
                         ->confirm('Voulez-vous vraiment supprimer cette vente?')
                         ->render();
-            
-                    // Modifier
+
                     $buttons[] = Button::make('Modifier')
                         ->method('editVente')
-                        ->parameters(['index' => $key])
+                        ->parameters(['id' => $vente->id])
                         ->class('btn btn-warning btn-sm')
                         ->render();
-            
-                    // Transformer un devis en facture
-                    if (in_array($item['type_document'] ?? '', ['devis', 'avoir'])) {
+
+                    if (in_array($vente->facture->type_document ?? '', ['devis', 'avoir'])) {
                         $buttons[] = Button::make('Transformer en facture')
                             ->method('transformQuoteToInvoice')
-                            ->parameters(['index' => $key])
+                            ->parameters(['id' => $vente->id])
                             ->class('btn btn-primary btn-sm')
                             ->confirm('Confirmer la transformation de ce document en facture ?')
                             ->render();
                     }
+
                     return implode(' ', $buttons);
                 }),
+
+            TD::make('pdf', 'PDF')
+                ->render(function (Ventes $vente) {
+                    $type = $vente->facture->type_document ?? 'facture';
             
-
-            
-                TD::make('pdf', 'PDF')
-                ->render(function ($item) {
-                    $type = $item['type_document'] ?? 'facture';
-                    $id = $item['document_id'] ?? null;
-
-                    if (!in_array($type, ['facture', 'devis', 'avoir']) || !is_numeric($id)) {
-                        return '—';
-                    }
-
-                    return Button::make('Télécharger PDF')
-                        ->icon('cloud-download')
-                        ->class('btn btn-info btn-sm')
-                        ->method('documentsDownload')
-                        ->parameters([
-                            'type' => $type,
-                            'id' => $id,
+                    return Link::make('Voir PDF')
+                        ->route('platform.facture.preview', [
+                            'id' => $vente->id_vente,
+                            'type' => $type
                         ])
-                        ->confirm('Voulez-vous vraiment télécharger ce PDF ?');
-                })
+                        ->class('btn btn-secondary btn-sm');
+                }),
+            
+            
         ];
-
     }
 }

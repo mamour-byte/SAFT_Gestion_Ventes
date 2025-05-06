@@ -17,71 +17,78 @@ class VenteController extends Controller
      * Ajouter une vente et mettre à jour le stock
      */
     public function addToVentesTable(Request $request)
-    {
-        $request->validate([
-            'vente.id_client' => 'required|exists:clients,id_client',
-            'vente.produits' => 'required|array',
-            'vente.produits.*' => 'exists:products,id_product',
-            'vente.quantites' => 'required|string',
-            'vente.tva' => 'nullable|boolean',
-            'vente.type_document' => 'required|string|in:facture,devis,avoir',
-        ]);
-
-        $venteData = $request->input('vente');
-        $quantites = array_map('intval', explode(',', $venteData['quantites']));
-        $typeDocument = $venteData['type_document'];
-
-        if (count($venteData['produits']) !== count($quantites)) {
-            Toast::error('Nombre de produits et quantités incompatible');
-            return back();
-        }
-
-        try {
-            DB::beginTransaction();
-
-            // Création de la facture ou devis
-            $facture = Facture::create([
-                'id_client' => $venteData['id_client'],
-                'id_user' => $request->user()->id,
-                'type_document' => $typeDocument,
-                'statut' => $typeDocument === 'devis' ? 'En attente' : 'Validé',
-                'tva' => $venteData['tva'] ?? false,
+        {
+            $request->validate([
+                'vente.id_client' => 'required|exists:clients,id_client',
+                'vente.produits' => 'required|array',
+                'vente.produits.*' => 'exists:products,id_product',
+                'vente.quantites' => 'required|string',
+                'vente.tva' => 'nullable|boolean',
+                'vente.type_document' => 'required|string|in:facture,devis,avoir',
             ]);
 
-            // Création de la vente
-            $vente = Ventes::create([
-                'id_client' => $venteData['id_client'],
-                'id_user' => $request->user()->id,
-                'id_facture' => $facture->id_facture,
-                'tva' => $venteData['tva'] ?? false,
-            ]);
+            $venteData = $request->input('vente');
+            $quantites = array_map('intval', explode(',', $venteData['quantites']));
+            $typeDocument = $venteData['type_document'];
 
-            // Ajout des détails et mise à jour du stock
-            foreach ($venteData['produits'] as $index => $idProduct) {
-                $product = Product::findOrFail($idProduct);
-                $quantite = $quantites[$index];
-
-                DetailVente::create([
-                    'id_vente' => $vente->id_vente,
-                    'id_product' => $idProduct,
-                    'quantite_vendue' => $quantite,
-                    'prix_total' => $quantite * $product->prix_unitaire,
-                    'date_vente' => now(),
-                ]);
-
-                $product->decrement('quantite_stock', $quantite);
+            if (count($venteData['produits']) !== count($quantites)) {
+                Toast::error('Nombre de produits et quantités incompatible');
+                return back();
             }
 
-            DB::commit();
-            Toast::success('Vente et document enregistrés avec succès !');
-            return back();
+            try {
+                DB::beginTransaction();
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Toast::error('Erreur : ' . $e->getMessage());
-            return back();
+                // Création de la facture ou devis
+                $facture = Facture::create([
+                    'id_client' => $venteData['id_client'],
+                    'id_user' => $request->user()->id,
+                    'type_document' => $typeDocument,
+                    'statut' => $typeDocument === 'devis' ? 'En attente' : 'Validé',
+                    'tva' => $venteData['tva'] ?? false,
+                ]);
+
+                // Création de la vente
+                $vente = Ventes::create([
+                    'id_client' => $venteData['id_client'],
+                    'id_user' => $request->user()->id,
+                    'id_facture' => $facture->id_facture,
+                    'tva' => $venteData['tva'] ?? false,
+                ]);
+
+                $applyTva = $venteData['tva'] ?? false;
+
+                // Ajout des détails et mise à jour du stock
+                foreach ($venteData['produits'] as $index => $idProduct) {
+                    $product = Product::findOrFail($idProduct);
+                    $quantite = $quantites[$index];
+
+                    $prixUnitaire = $product->prix_unitaire;
+                    $prixAvecTva = $applyTva ? $prixUnitaire * 1.18 : $prixUnitaire;
+                    $prixTotal = $quantite * $prixAvecTva;
+
+                    DetailVente::create([
+                        'id_vente' => $vente->id_vente,
+                        'id_product' => $idProduct,
+                        'quantite_vendue' => $quantite,
+                        'prix_total' => $prixTotal,
+                        'date_vente' => now(),
+                    ]);
+
+                    $product->decrement('quantite_stock', $quantite);
+                }
+
+                DB::commit();
+                Toast::success('Vente et document enregistrés avec succès !');
+                return back();
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Toast::error('Erreur : ' . $e->getMessage());
+                return back();
+            }
         }
-    }
+
 
     /**
      * Supprimer une vente et mettre à jour le stock

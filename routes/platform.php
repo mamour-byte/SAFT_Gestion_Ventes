@@ -19,6 +19,7 @@ use App\Orchid\Screens\VentesScreen;
 use App\Orchid\Screens\FactureScreen;
 use App\Orchid\Screens\DashbordScreen;
 use App\Http\Controllers\pdfController;
+use App\Orchid\Screens\FacturePreviewScreen;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,5 +131,7 @@ Route::screen('users', UserListScreen::class)
         ->push(__('Users'), route('platform.systems.users')));
 
 
-// ----------------- Platform > Facture ---------------------
-Route::post('documents/download', [pdfController::class, 'downloadPDF'])->name('documents.download');
+
+// -----------------Platform Facture----------------------
+Route::screen('facture/preview', FacturePreviewScreen::class)->name('platform.facture.preview');
+Route::get('facture/download', [FactureController::class, 'download'])->name('platform.facture.download');

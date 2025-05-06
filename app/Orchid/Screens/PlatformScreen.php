@@ -72,9 +72,6 @@ class PlatformScreen extends Screen
 
             // $formatted = $this->formatVentes($ventes);
 
-        
-
-
             $ventesParProduit = app(ChartController::class)->ventesParProduit();
             $ventesMensuelles = app(ChartController::class)->ventesParJourDuMois();
             $venteParClient = app(ChartController::class)->ventesParClient();
@@ -85,9 +82,9 @@ class PlatformScreen extends Screen
             
             return [
 
-                'factures' => $this->formatVentes($factures),
-                'devis' => $this->formatVentes($devis),
-                'avoirs' => $this->formatVentes($avoirs),
+                'factures' => $factures,
+                'devis' => $devis,  
+                'avoirs' => $avoirs,
 
                 'chartData' => [
                     [
