@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique(); 
             $table->string('telephone')->nullable(); 
             $table->text('adresse')->nullable(); 
+            $table->boolean('archived')->default(false); 
             $table->timestamps();
         });
         

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->decimal('prix_unitaire', 10, 2); 
             $table->integer('quantite_stock'); 
+            $table->boolean('archived')->default(false);
             $table->timestamps();
         });
     }

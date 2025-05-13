@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: saft-app
+    container_name: saft-app
+    ports:
+      - 9000:9000
+    volumes:
+      - .:/var/www
+    depends_on:
+      - db
+
+  web:
+    image: nginx:alpine
+    container_name: saft-web
+    ports:
+      - 8081:80  # Port personnalisé au lieu de 8000 ou 80
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: saft-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: saft_apk
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3308:3306  # Port personnalisé pour éviter conflit avec XAMPP
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
