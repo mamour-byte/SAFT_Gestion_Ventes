@@ -7,6 +7,7 @@ use App\Models\Vente;
 use App\Models\Ventes;
 use Illuminate\Support\Facades\DB;
 
+
 class ChartController extends Controller
 {
 
@@ -135,4 +136,26 @@ class ChartController extends Controller
                     ->whereYear('date_vente', now()->year)
                     ->value('total_ventes') ?? 0; // Retxourne 0 si aucune vente
             }
+
+        public function courbesVentesDuMois()
+            {
+                return DB::table('ventes')
+                    ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+                    ->selectRaw('
+                        DATE(ventes.created_at) as date, 
+                        SUM(CASE WHEN facture.type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
+                        SUM(CASE WHEN facture.type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
+                        SUM(CASE WHEN facture.type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs
+                    ')
+                    ->whereMonth('ventes.created_at', now()->month)
+                    ->whereYear('ventes.created_at', now()->year)
+                    ->groupBy(DB::raw('DATE(ventes.created_at)'))
+                    ->orderBy('date', 'ASC')
+                    ->get();
+            }
+                
+                
+            
+
+        
 }

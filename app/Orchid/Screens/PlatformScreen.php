@@ -14,6 +14,7 @@ use App\Orchid\Layouts\Charts\ClientChart;
 use App\Orchid\Layouts\TabsNav\DevisTable;
 use App\Orchid\Layouts\TabsNav\FactureTable;
 use App\Orchid\Layouts\TabsNav\AvoirTable;
+use App\Orchid\Layouts\Charts\typeDocsChart;
 
 class PlatformScreen extends Screen
 {
@@ -79,6 +80,8 @@ class PlatformScreen extends Screen
             $MeilleurClient=app(ChartController::class)->meilleurClientDuMois();
             $NombreFactures=app(ChartController::class)->nombreDeFacturesDuMois();
             $TotalGeneré=app(ChartController::class)->totalGenereDuMois();
+            $courbesVentesParJour = app(ChartController::class)->courbesVentesDuMois();
+
             
             return [
 
@@ -112,6 +115,27 @@ class PlatformScreen extends Screen
                     'Facture' => ['value' => $NombreFactures ?? 0, 'diff' => 0],
                     'Total'    => $TotalGeneré ?? 0,
                 ],
+
+
+                'courbesData' => [
+                    [
+                        'name' => 'Factures',
+                        'labels' => $courbesVentesParJour->pluck('date')->toArray(),
+                        'values' => $courbesVentesParJour->pluck('total_factures')->toArray(),
+                    ],
+                    [
+                        'name' => 'Devis',
+                        'labels' => $courbesVentesParJour->pluck('date')->toArray(),
+                        'values' => $courbesVentesParJour->pluck('total_devis')->toArray(),
+                    ],
+                    [
+                        'name' => 'Avoirs',
+                        'labels' => $courbesVentesParJour->pluck('date')->toArray(),
+                        'values' => $courbesVentesParJour->pluck('total_avoirs')->toArray(),
+                    ],
+                ],
+
+
                 
                 'ventesMensuelles' => $ventesMensuelles,
                 'MeilleurVente' => $MeilleurVente,
@@ -163,6 +187,17 @@ class PlatformScreen extends Screen
                 'Total Generé' => 'metrics.Total',
             ]),
 
+
+            VenteChart::class,
+                
+    
+            Layout::columns([
+                ProductChart::class,
+                ClientChart::class,
+                ]),
+
+            typeDocsChart::class,
+
             Layout::columns([
                 Layout::tabs([
                     'Factures' => FactureTable::class,
@@ -170,14 +205,7 @@ class PlatformScreen extends Screen
                     'Avoirs' => AvoirTable::class,
                 ]),
                 
-                
             ]),
-            layout::columns([
-                ProductChart::class,
-                VenteChart::class,
-            ]),
-            ClientChart::class,
-            
         ];
     }
 }

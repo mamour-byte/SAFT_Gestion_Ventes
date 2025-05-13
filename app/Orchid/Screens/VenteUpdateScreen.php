@@ -11,27 +11,35 @@ use Orchid\Screen\Screen;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Switcher;
 use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Layouts\Rows;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Actions\Button;
 use Orchid\Support\Facades\Toast;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 
 class VenteUpdateScreen extends Screen
 {
     public $name = 'Modifier la Vente';
-
     public $description = 'Éditez les informations de la vente sélectionnée';
-
     public $vente;
 
     public function query(Ventes $vente): array
     {
-        $vente->load(['client', 'details.product', 'facture']); // Eager load
+        $vente->load(['client', 'details.product', 'facture']);
+        $this->vente = $vente;  // ← pour l'utiliser dans layout()
 
         return [
-            'vente' => $vente
+            'vente' => $vente,
+        ];
+    }
+
+    public function commandBar(): array
+    {
+        return [
+            Button::make('Enregistrer')
+                ->method('update')
+                ->icon('check'),
         ];
     }
 
@@ -39,6 +47,9 @@ class VenteUpdateScreen extends Screen
     {
         return [
             Layout::rows([
+                Input::make('vente.id_vente')->type('hidden')->value($this->vente->id_vente),
+                Input::make('vente.id_facture')->type('hidden')->value(optional($this->vente->facture)->id_facture),
+
                 Relation::make('vente.id_client')
                     ->title('Client')
                     ->fromModel(Client::class, 'nom')
@@ -48,11 +59,12 @@ class VenteUpdateScreen extends Screen
                 Switcher::make('vente.tva')
                     ->title('Appliquer la TVA')
                     ->sendTrueOrFalse()
-                    ->value($this->vente->tva),
+                    ->value(optional($this->vente->facture)->tva),  // ← TVA est dans facture, pas vente
 
                 Input::make('vente.facture.numero_facture')
                     ->title('Numéro de Facture')
-                    ->disabled(), 
+                    ->disabled()
+                    ->value(optional($this->vente->facture)->numero_facture),
 
                 Select::make('vente.type_document')
                     ->title('Type de document')
@@ -63,9 +75,7 @@ class VenteUpdateScreen extends Screen
                     ])
                     ->required()
                     ->help('Choisissez le type de document')
-                    ->value(optional($this->vente->facture)->type_document), // ← Ajouter cette ligne
-                
-
+                    ->value(optional($this->vente->facture)->type_document),
             ]),
 
             Layout::rows([
@@ -74,99 +84,100 @@ class VenteUpdateScreen extends Screen
                     ->fromModel(Product::class, 'nom')
                     ->multiple()
                     ->help('Sélectionnez les produits de la vente')
-                    ->value($this->vente->details->pluck('id_product')->toArray()), // ← Afficher les produits associés
+                    ->value($this->vente->details->pluck('id_product')->toArray()),
 
                 Input::make('quantites')
                     ->title('Quantités (séparées par virgule)')
                     ->placeholder('Exemple : 2,3,1')
                     ->help('Quantité correspondante à chaque produit sélectionné')
-                    ->value($this->vente->details->pluck('quantite_vendue')->implode(',')), 
-
-                
-            ])
+                    ->value($this->vente->details->pluck('quantite_vendue')->implode(',')),
+            ]),
         ];
     }
 
-    public function commandBar(): array
+    public function update(Request $request)
     {
-        return [
-            \Orchid\Screen\Actions\Button::make('Enregistrer')
-                ->method('save')
-                ->icon('check')
-        ];
-    }
+        $request->validate([
+            'vente.id_client' => 'required|exists:clients,id_client',
+            'vente.id_vente' => 'required|exists:ventes,id_vente',
+            'vente.id_facture' => 'required|exists:facture,id_facture',
 
-    public function update(Request $request, $id)
-        {
-            $request->validate([
-                'vente.id_client' => 'required|exists:clients,id_client',
-                'vente.produits' => 'required|array',
-                'vente.produits.*' => 'exists:products,id_product',
-                'vente.quantites' => 'required|string',
-                'vente.tva' => 'nullable|boolean',
-                'vente.type_document' => 'required|string|in:devis,facture,avoir', // Validation du type de document
-            ]);
+            'produits' => 'required|array',
+            'produits.*' => 'exists:products,id_product',
 
-            // Récupérer les données de la vente
-            $venteData = $request->input('vente');
-            $quantites = array_map('intval', explode(',', $venteData['quantites']));
-            $typeDocument = $venteData['type_document'];
+            'quantites' => 'required|string',
 
-            if (count($venteData['produits']) !== count($quantites)) {
-                Toast::error('Nombre de produits et quantités incompatible');
-                return back();
-            }
+            'vente.tva' => 'nullable|boolean',
+            'vente.type_document' => 'required|string|in:devis,facture,avoir',
+        ]);
 
-            try {
-                DB::beginTransaction();
+        $id_client = $request->input('vente.id_client');
+        $tva = $request->boolean('vente.tva');  
+        $type_document = $request->input('vente.type_document');
+        $produits = $request->input('produits');
+        $quantites = array_map('intval', explode(',', $request->input('quantites')));
 
-                // Mise à jour de la facture avec le nouveau type de document
-                $facture = Facture::findOrFail($venteData['id_facture']);
-                $facture->update([
-                    'type_document' => $typeDocument,
-                    'statut' => $typeDocument === 'devis' ? 'En attente' : 'Validé', // Modifier le statut selon le type de document
-                ]);
+        $id_vente = $request->input('vente.id_vente');
+        $id_facture = $request->input('vente.id_facture');
 
-                // Mise à jour de la vente
-                $vente = Ventes::findOrFail($venteData['id_vente']);
-                $vente->update([
-                    'id_client' => $venteData['id_client'],
-                    'tva' => $venteData['tva'] ?? false,
-                ]);
-
-                $applyTva = $venteData['tva'] ?? false;
-
-                // Mise à jour des détails de vente et du stock
-                foreach ($venteData['produits'] as $index => $idProduct) {
-                    $product = Product::findOrFail($idProduct);
-                    $quantite = $quantites[$index];
-
-                    $prixUnitaire = $product->prix_unitaire;
-                    $prixAvecTva = $applyTva ? $prixUnitaire * 1.18 : $prixUnitaire;
-                    $prixTotal = $quantite * $prixAvecTva;
-
-                    // Mise à jour des détails de vente
-                    DetailVente::where('id_vente', $vente->id_vente)
-                        ->where('id_product', $idProduct)
-                        ->update([
-                            'quantite_vendue' => $quantite,
-                            'prix_total' => $prixTotal,
-                            'date_vente' => now(),
-                        ]);
-
-                    // Mise à jour du stock
-                    $product->decrement('quantite_stock', $quantite);
-                }
-
-                DB::commit();
-                Toast::success('Vente et document mis à jour avec succès !');
-                return back();
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Toast::error('Erreur : ' . $e->getMessage());
-                return back();
-            }
+        if (count($produits) !== count($quantites)) {
+            Toast::error('Nombre de produits et quantités incompatibles.');
+            return back();
         }
 
+        try {
+            DB::beginTransaction();
+
+            $vente = Ventes::findOrFail($id_vente);
+            $facture = Facture::findOrFail($id_facture);
+
+            // Mise à jour facture (TVA est ici !)
+            $facture->update([
+                'type_document' => $type_document,
+                'tva' => $tva,
+                'statut' => $type_document === 'devis' ? 'En attente' : 'Validé',
+            ]);
+
+            // Mise à jour vente (client uniquement)
+            $vente->update([
+                'id_client' => $id_client,
+            ]);
+
+            // Récupérer tous les produits en une seule requête (optimisation)
+            $products = Product::whereIn('id_product', $produits)->get()->keyBy('id_product');
+
+            foreach ($produits as $index => $idProduct) {
+                $product = $products[$idProduct] ?? null;
+                $quantite = $quantites[$index];
+
+                if (!$product) {
+                    throw new \Exception("Produit avec l'ID {$idProduct} introuvable.");
+                }
+
+                $prixUnitaire = $product->prix_unitaire;
+                $prixAvecTva = $tva ? $prixUnitaire * 1.18 : $prixUnitaire;
+                $prixTotal = $quantite * $prixAvecTva;
+
+                DetailVente::updateOrCreate(
+                    ['id_vente' => $vente->id_vente, 'id_product' => $idProduct],
+                    [
+                        'quantite_vendue' => $quantite,
+                        'prix_total' => $prixTotal,
+                        'date_vente' => now(),
+                    ]
+                );
+
+                $product->decrement('quantite_stock', $quantite);
+            }
+
+            DB::commit();
+            Toast::success('Vente et document mis à jour avec succès !');
+            return redirect()->route('platform.ventes');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Toast::error('Erreur : ' . $e->getMessage());
+            return back();
+        }
+    }
 }

@@ -75,15 +75,15 @@ class HistVentesRow extends Table
                 ->render(function (Ventes $vente) {
                     $type = $vente->facture->type_document ?? 'facture';
             
-                    return Link::make('Voir PDF')
-                        ->icon('')
-                        ->class('btn btn-success')
+                    return Link::make(' PDF')
+                        ->icon('file-pdf-fill')
+                        ->class('btn btn-success btn-sm') 
                         ->route('platform.facture.preview', [
                             'id' => $vente->id_vente,
-                            'type' => $type
-                        ])
-                        ->class('btn btn-secondary btn-sm');
+                            'type' => $type,
+                        ]);
                 }),
+            
             
             
         ];

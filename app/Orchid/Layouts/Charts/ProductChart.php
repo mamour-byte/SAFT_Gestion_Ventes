@@ -14,6 +14,7 @@ class ProductChart extends Chart
      * @var string
      */
     protected $type = 'pie';
+    
 
     /**
      * Determines whether to display the export button.
