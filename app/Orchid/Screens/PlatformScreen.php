@@ -109,11 +109,12 @@ class PlatformScreen extends Screen
                 ],
 
                 
+                
                 'metrics' => [ 
                     'Vente'    => ['value' => $MeilleurVente?->produit ?? 'Aucune vente', 'diff' => $MeilleurVente?->total_ventes ?? 0],
                     'Client'   => ['value' => $MeilleurClient?->client ?? 'Aucun client', 'diff' => $MeilleurClient?->total_ventes ?? 0],
-                    'Facture' => ['value' => $NombreFactures ?? 0, 'diff' => 0],
-                    'Total'    => $TotalGeneré ?? 0,
+                    'Facture'  => ['value' => $NombreFactures ?? 0, 'diff' => 0],
+                    'Total'    => number_format((float) ($TotalGeneré ?? 0), 0, '', ' '),
                 ],
 
 
