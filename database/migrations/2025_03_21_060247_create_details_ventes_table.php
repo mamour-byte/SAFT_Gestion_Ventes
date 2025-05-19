@@ -22,6 +22,8 @@ return new class extends Migration
 
         $table->date('date_vente')->nullable(); 
         $table->decimal('prix_total', 10, 2);
+
+        $table->boolean('archived')->default(false);
         
         $table->integer('quantite_vendue');
         $table->timestamps();

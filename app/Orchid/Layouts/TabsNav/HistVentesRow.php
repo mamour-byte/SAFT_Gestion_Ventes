@@ -45,13 +45,18 @@ class HistVentesRow extends Table
                     return $vente->facture ? $vente->facture->type_document : 'Non défini';
                 }),
 
-                TD::make('total', 'Total TTC')
-                ->render(function (Ventes $vente) {
-                    $total = $vente->details->sum(function ($detail) {
-                        return $detail->prix_total ?? 0;
-                    });
-                    return number_format($total) . ' F CFA';
-                }),
+            TD::make('status', 'Statut')
+                    ->render(function (Ventes $vente) {
+                        $statut = $vente->facture->statut ?? 'Non défini';
+
+                        $color = match($statut) {
+                            'Validé' => 'text-success',
+                            'En attente' => 'text-danger',
+                            default => 'text-muted'
+                        };
+
+                        return "<span class='{$color}'>{$statut}</span>";
+                    }),
 
             TD::make('actions', 'Actions')
                 ->render(function (Ventes $vente) {

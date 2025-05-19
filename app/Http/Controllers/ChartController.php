@@ -3,18 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Vente;
 use App\Models\Ventes;
 use Illuminate\Support\Facades\DB;
 
-
 class ChartController extends Controller
 {
-
     private function applyDateFilter($query, $startDate, $endDate)
     {
         return $query->when($startDate, fn($q) => $q->whereDate('ventes.created_at', '>=', $startDate))
-                    ->when($endDate, fn($q) => $q->whereDate('ventes.created_at', '<=', $endDate));
+                     ->when($endDate, fn($q) => $q->whereDate('ventes.created_at', '<=', $endDate));
     }
 
     private function setDefaultDateRange(&$startDate, &$endDate)
@@ -27,6 +24,13 @@ class ChartController extends Controller
         }
     }
 
+    private function filterFacturesValide($query)
+    {
+        return $query->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+                     ->where('facture.type_document', 'facture')
+                     ->where('facture.statut', 'validé');
+    }
+
     public function ventesParProduit($startDate = null, $endDate = null)
     {
         $this->setDefaultDateRange($startDate, $endDate);
@@ -36,11 +40,12 @@ class ChartController extends Controller
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
             ->join('products', 'details_ventes.id_product', '=', 'products.id_product');
 
+        $query = $this->filterFacturesValide($query);
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('products.nom')
-            ->orderBy('total_ventes', 'DESC')
-            ->get();
+                     ->orderBy('total_ventes', 'DESC')
+                     ->get();
     }
 
     public function ventesParClient($startDate = null, $endDate = null)
@@ -52,24 +57,28 @@ class ChartController extends Controller
             ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
+        $query = $this->filterFacturesValide($query);
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('clients.nom')
-            ->having('total_ventes', '>', 0)
-            ->orderBy('total_ventes', 'DESC')
-            ->get();
+                     ->having('total_ventes', '>', 0)
+                     ->orderBy('total_ventes', 'DESC')
+                     ->get();
     }
 
-        public function ventesParJourDuMois()
-            {
-                return DB::table('ventes')
-                    ->selectRaw('DATE(created_at) as date, COUNT(id_vente) as total_ventes')
-                    ->whereMonth('created_at', now()->month)
-                    ->whereYear('created_at', now()->year)
-                    ->groupBy('date')
-                    ->orderBy('date', 'ASC')
-                    ->get();
-            }
+    public function ventesParJourDuMois()
+    {
+        return DB::table('ventes')
+            ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+            ->selectRaw('DATE(ventes.created_at) as date, COUNT(ventes.id_vente) as total_ventes')
+            ->where('facture.type_document', 'facture')
+            ->where('facture.statut', 'validé')
+            ->whereMonth('ventes.created_at', now()->month)
+            ->whereYear('ventes.created_at', now()->year)
+            ->groupBy('date')
+            ->orderBy('date', 'ASC')
+            ->get();
+    }
 
     public function ventesParMois($startDate = null, $endDate = null)
     {
@@ -79,11 +88,12 @@ class ChartController extends Controller
             ->selectRaw('DATE_FORMAT(details_ventes.date_vente, "%Y-%m") as mois, SUM(details_ventes.quantite_vendue) as total_ventes')
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
+        $query = $this->filterFacturesValide($query);
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('mois')
-            ->orderBy('mois', 'ASC')
-            ->get();
+                     ->orderBy('mois', 'ASC')
+                     ->get();
     }
 
     public function meilleureVenteDuMois($startDate = null, $endDate = null)
@@ -95,11 +105,12 @@ class ChartController extends Controller
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
             ->join('products', 'details_ventes.id_product', '=', 'products.id_product');
 
+        $query = $this->filterFacturesValide($query);
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('produit')
-            ->orderBy('total_ventes', 'DESC')
-            ->first();
+                     ->orderBy('total_ventes', 'DESC')
+                     ->first();
     }
 
     public function meilleurClientDuMois($startDate = null, $endDate = null)
@@ -111,51 +122,85 @@ class ChartController extends Controller
             ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
+        $query = $this->filterFacturesValide($query);
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('client')
-            ->orderBy('total_ventes', 'DESC')
-            ->first();
+                     ->orderBy('total_ventes', 'DESC')
+                     ->first();
     }
 
     public function NombredeFacturesDuMois($mois = null, $annee = null)
-        {
-            $mois = $mois ?? now()->month;
-            $annee = $annee ?? now()->year;
+    {
+        $mois = $mois ?? now()->month;
+        $annee = $annee ?? now()->year;
 
-            return Ventes::whereMonth('created_at', $mois)
-                        ->whereYear('created_at', $annee)
-                        ->count();
-        }
+        return Ventes::join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+                    ->where('facture.type_document', 'facture')
+                    ->where('facture.statut', 'validé')
+                    ->whereMonth('ventes.created_at', $mois)
+                    ->whereYear('ventes.created_at', $annee)
+                    ->count();
+    }
 
-        public function totalGenereDuMois()
-            {
-                return DB::table('details_ventes')
-                    ->selectRaw('SUM(prix_total) as total_ventes')
-                    ->whereMonth('date_vente', now()->month)
-                    ->whereYear('date_vente', now()->year)
-                    ->value('total_ventes') ?? 0; // Retxourne 0 si aucune vente
-            }
+    public function totalGenereDuMois()
+    {
+        return DB::table('details_ventes')
+            ->join('ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+            ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+            ->where('facture.type_document', 'facture')
+            ->where('facture.statut', 'validé')
+            ->whereMonth('details_ventes.date_vente', now()->month)
+            ->whereYear('details_ventes.date_vente', now()->year)
+            ->sum('prix_total');
+    }
 
-        public function courbesVentesDuMois()
-            {
-                return DB::table('ventes')
-                    ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
-                    ->selectRaw('
-                        DATE(ventes.created_at) as date, 
-                        SUM(CASE WHEN facture.type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
-                        SUM(CASE WHEN facture.type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
-                        SUM(CASE WHEN facture.type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs
-                    ')
-                    ->whereMonth('ventes.created_at', now()->month)
-                    ->whereYear('ventes.created_at', now()->year)
-                    ->groupBy(DB::raw('DATE(ventes.created_at)'))
-                    ->orderBy('date', 'ASC')
-                    ->get();
-            }
-                
-                
-            
+    public function courbesVentesDuMois()
+    {
+        return DB::table('ventes')
+            ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+            ->selectRaw('
+                DATE(ventes.created_at) as date, 
+                SUM(CASE WHEN facture.type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
+                SUM(CASE WHEN facture.type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
+                SUM(CASE WHEN facture.type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs
+            ')
+            ->whereMonth('ventes.created_at', now()->month)
+            ->whereYear('ventes.created_at', now()->year)
+            ->groupBy(DB::raw('DATE(ventes.created_at)'))
+            ->orderBy('date', 'ASC')
+            ->get();
+    }
 
-        
+    public function statsDocumentsMois()
+    {
+        $mois = now()->month;
+        $annee = now()->year;
+
+        $documents = DB::table('facture')
+            ->selectRaw('
+                SUM(CASE WHEN type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
+                SUM(CASE WHEN type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs,
+                SUM(CASE WHEN type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
+                COUNT(*) as total_documents
+            ')
+            ->whereMonth('created_at', $mois)
+            ->whereYear('created_at', $annee)
+            ->first();
+
+        $taux_transformation = $documents->total_devis > 0
+            ? round(($documents->total_factures / $documents->total_devis) * 100, 2)
+            : 0;
+
+        return [
+            'devis' => $documents->total_devis,
+            'avoirs' => $documents->total_avoirs,
+            'factures' => $documents->total_factures,
+            'total' => $documents->total_documents,
+            'taux' => $taux_transformation,
+        ];
+    }
+
+
+
 }

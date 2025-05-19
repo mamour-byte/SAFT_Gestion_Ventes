@@ -5,6 +5,7 @@ namespace App\Orchid\Layouts\TabsNav;
 use Orchid\Screen\Layouts\Table;
 use Orchid\Screen\TD;
 use App\Models\Client;
+use App\Models\Ventes;
 
 class AvoirTable extends Table
 {
@@ -25,12 +26,32 @@ class AvoirTable extends Table
                         })->join(', ');
                     }),
     
-                TD::make('date_vente', 'Date livraison')
+                TD::make('date', 'Date')
                     ->render(function ($vente) {
-                        return $vente->date_vente
-                            ? \Carbon\Carbon::parse($vente->date_vente)->format('d/m/Y')
-                            : 'Non spécifiée';
+                        return $vente->created_at->format('d/m/Y');
                     }),
+
+                TD::make('total', 'Total TTC')
+                    ->render(function (Ventes $vente) {
+                        $total = $vente->details->sum(function ($detail) {
+                            return $detail->prix_total ?? 0;
+                        });
+                        return number_format($total) . ' F CFA';
+                    }),
+
+                TD::make('status', 'Statut')
+                    ->render(function (Ventes $vente) {
+                        $statut = $vente->facture->statut ?? 'Non défini';
+
+                        $color = match($statut) {
+                            'Validé' => 'text-success',
+                            'En attente' => 'text-danger',
+                            default => 'text-muted'
+                        };
+
+                        return "<span class='{$color}'>{$statut}</span>";
+                    })
+
             ];
         }
 }
