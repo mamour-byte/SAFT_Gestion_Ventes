@@ -82,26 +82,26 @@
     <h2>n° {{ $numero_facture }}</h2>
 
     <div class="company">
-        <strong>Votre Entreprise</strong><br>
-        123 Rue de la Société<br>
+        <strong>SAFT</strong><br>
+        123 Rue Du savoir<br>
         75000 Paris<br>
         Tél: 01 23 45 67 89<br>
         Email: contact@entreprise.com
     </div>
 
     <div class="client">
-        <strong>Client :</strong><br>
         {{ $client_nom }} {{ $client_prenom }}<br>
         {{ $client_adresse }}<br>
         Tél: {{ $client_telephone }}<br>
         Email: {{ $client_email }}<br>
-        SIRET: {{ $client_siret }}
+        Ninea: {{ $client_NumeroNinea }} <br>
+        RC: {{ $Client_NumeroRC }}<br>
     </div>
 
     <div class="clearfix"></div>
 
-    <p><strong>Date de Facture :</strong> {{ $date_facture }}<br>
-    <strong>Date d’échéance :</strong> {{ $date_echeance }}</p>
+    <p><strong>Date de {{$type_document}} :</strong> {{ $date_facture }}<br>
+    <!-- <p><strong>Date d' écheance :</strong> {{ $date_echeance }}<br> -->
 
     <table>
         <thead>
@@ -141,11 +141,13 @@
 
     <p class="tva-status">{{ $tva_status }}</p>
 
-    <div class="footer">
-        SAFT - SN Dakar - 12500 Yoff<br>
-        Tél: 33 XXX XX XX - Email: services@saft.com - SIRET: XXX XXX XXX XX<br>
-        Merci pour votre confiance.
-    </div>
+    <footer>
+        <div class="footer">
+            SAFT - SN Dakar - 12500 Yoff<br>
+            Tél: 33 XXX XX XX - Email: services@saft.com - SIRET: XXX XXX XXX XX<br>
+            Merci pour votre confiance.
+        </div>
+    </footer>
 
 </body>
 </html>

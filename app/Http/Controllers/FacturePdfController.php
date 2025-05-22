@@ -39,15 +39,16 @@ class FacturePdfController extends Controller
 
         $pdfData = [
             'numero_facture' => $vente->facture->numero_facture ?? '-',
-            'date_facture' => optional($vente->facture->date_facture)->format('d/m/Y') ?? '-',
-            'date_echeance' => optional($vente->facture->date_echeance)->format('d/m/Y') ?? '-',
+            'date_facture' => $vente->facture->date_facture ?? now()->format('Y-m-d'),
+            'date_echeance' => $vente->facture->date_echeance ?? now()->addDays(30)->format('Y-m-d'),
 
             'client_nom' => $vente->client->nom ?? '',
             'client_prenom' => $vente->client->prenom ?? '',
             'client_adresse' => $vente->client->adresse ?? '',
             'client_telephone' => $vente->client->telephone ?? '',
             'client_email' => $vente->client->email ?? '',
-            'client_siret' => $vente->client->siret ?? '',
+            'client_NumeroNinea' => $vente->client->NumeroNinea ?? '',
+            'Client_NumeroRC' => $vente->client->NumeroRegistreCommerce ?? '',
 
             'produits' => $produitsArray,
             'subtotal' => $subtotal,

@@ -8,6 +8,7 @@ use Orchid\Support\Facades\Toast;
 use Illuminate\Http\Request;
 use App\Models\Client;
 use Orchid\Screen\Screen;
+use Orchid\Screen\Fields\Group;
 
 class ClientAddScreen extends Screen
 {
@@ -58,20 +59,33 @@ class ClientAddScreen extends Screen
                     ->required()
                     ->placeholder('Entrez le nom du client'),
 
-                Input::make('client.email')
+                Group::make([
+                    Input::make('client.email')
                     ->title('Email')
                     ->placeholder('Entrez l email '),
 
-                Input::make('client.telephone')
-                    ->title('Telehpone')
-                    ->type('number')
-                    ->mask('(+221) 99-999-99-99')
-                    ->placeholder('Entrez le numero de telephone'),
+                    Input::make('client.telephone')
+                        ->title('Telehpone')
+                        ->type('number')
+                        ->mask('(+221) 99-999-99-99')
+                        ->placeholder('Entrez le numero de telephone'),
 
-                Input::make('client.adresse')
-                    ->title('Adresse')
-                    ->placeholder('Entrez l Adresse '),
-            ]),
+                    Input::make('client.adresse')
+                        ->title('Adresse')
+                        ->placeholder('Entrez l Adresse '),
+                    ]),
+
+                    Group::make([
+                    Input::make('client.NumeroNinea')
+                        ->title('Numéro NINEA')
+                        ->placeholder('Entrez le numéro NINEA'),
+
+                    Input::make('client.NumeroRegistreCommerce')
+                        ->title('Numéro Registre de Commerce')
+                        ->placeholder('Entrez le numéro Registre de Commerce'),
+                    ]),
+            ])
+           
         ];
     }
 

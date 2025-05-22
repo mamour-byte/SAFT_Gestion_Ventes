@@ -7,6 +7,7 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Fields\Input;
 use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
+use Orchid\Screen\Fields\Group;
 
 class ClientEditScreen extends Screen
 {
@@ -73,6 +74,16 @@ class ClientEditScreen extends Screen
                 Input::make('client.adresse')
                     ->title('Adresse')
                     ->required(),
+
+                Group::make([
+                    Input::make('client.NumeroNinea')
+                        ->title('Numéro NINEA')
+                        ->placeholder('Entrez le numéro NINEA'),
+
+                    Input::make('client.NumeroRegistreCommerce')
+                        ->title('Numéro Registre de Commerce')
+                        ->placeholder('Entrez le numéro Registre de Commerce'),
+                    ]),
             ]),
         ];
     }
@@ -87,6 +98,8 @@ class ClientEditScreen extends Screen
             'client.email' => 'required|email',
             'client.telephone' => 'required',
             'client.adresse' => 'required',
+            'client.NumeroNinea' => 'nullable',
+            'client.NumeroRegistreCommerce' => 'nullable',
         ]);
 
         $client->update($request->input('client'));

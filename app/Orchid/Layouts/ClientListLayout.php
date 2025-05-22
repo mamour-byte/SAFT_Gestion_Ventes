@@ -41,6 +41,9 @@ class ClientListLayout extends Table
             TD::make('adresse', 'Adresse')
                 ->render(fn ($client) => $client->adresse),
 
+            // TD::make('NumeroNinea', 'Ninea')
+            //     ->render(fn ($client) => $client->NumeroNinea),
+
             TD::make('Editer')
                 ->render(fn (Client $client) =>         
                 Link::make()

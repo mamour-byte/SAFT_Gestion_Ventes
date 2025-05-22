@@ -8,6 +8,8 @@ use Orchid\Screen\TD;
 use Orchid\Screen\Actions\Button;
 use App\Models\Ventes;
 use App\Models\Facture;
+use Orchid\Screen\Actions\DropDown;
+use Orchid\Screen\Actions\ModalToggle;
 
 
 class HistVentesRow extends Table
@@ -57,24 +59,25 @@ class HistVentesRow extends Table
 
                         return "<span class='{$color}'>{$statut}</span>";
                     }),
+                
+                TD::make(__('Actions'))
+                    ->align(TD::ALIGN_CENTER)
+                    ->width('100px')
+                    ->render(fn (Ventes $vente) => DropDown::make()
+                        ->icon('bs.three-dots-vertical')
+                        ->list([
+                            Link::make(__('Modifier'))
+                                ->route('platform.ventes.edit', $vente->id_vente)
+                                ->icon('bs.pencil'),
 
-            TD::make('actions', 'Actions')
-                ->render(function (Ventes $vente) {
+                            Button::make(__('Supprimer'))
+                                ->icon('bs.trash3')
+                                ->confirm(__('Des que la vente est supprimé, il ne peut plus être récupéré.etes vous sûr de vouloir supprimer la vente ?'))
+                                ->method('goToDelete', [
+                                        'id' => $vente->id_vente,
+                                    ])
 
-                    $buttons[] = Button::make('Supprimer')
-                        ->method('removeFromVentesTable')
-                        ->parameters(['id' => $vente->id])
-                        ->class('btn btn-danger btn-sm')
-                        ->confirm('Voulez-vous vraiment supprimer cette vente?')
-                        ->render();
-
-                    $buttons[] = Link::make('Modifier')
-                        ->route('platform.ventes.edit', $vente->id_vente) 
-                        ->class('btn btn-warning btn-sm')
-                        ->render();
-
-                    return implode(' ', $buttons);
-                }),
+                        ])),
 
             TD::make('pdf', 'PDF')
                 ->render(function (Ventes $vente) {

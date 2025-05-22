@@ -15,6 +15,8 @@ class Client extends Model
         'email',
         'telephone',
         'adresse',
+        'NumeroNinea',
+        'NumeroRegistreCommerce',
         'archived'
     ];
 }

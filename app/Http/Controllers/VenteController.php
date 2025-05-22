@@ -64,9 +64,14 @@ class VenteController extends Controller
                     'id_client' => $venteData['id_client'],
                     'id_user' => $request->user()->id,
                     'type_document' => $typeDocument,
-                    'statut' => $typeDocument === 'devis' ? 'En attente' : 'Validé',
                     'tva' => $venteData['tva'] ?? false,
-                    'numero_facture' => $numeroFacture, // On insère le numéro de document généré
+                    'numero_facture' => $numeroFacture,
+                    'statut' => match ($typeDocument) {
+                        'devis', 'avoir' => 'En attente',
+                        'facture' => 'Validé',
+                        default => 'En attente',
+                    },
+
                 ]);
 
                 // Création de la vente
@@ -114,31 +119,26 @@ class VenteController extends Controller
     /**
      * Supprimer une vente et mettre à jour le stock
      */
-    public function destroy(Product $product)
-    {
-        $product->delete();
+    public function destroy($id)
+        {
+            $vente = Ventes::with(['facture', 'details'])->findOrFail($id);
 
-        return redirect()->route('platform.product.list')
-            ->with('success', 'Produit supprimé avec succès');
-    }
+            try {
+                $vente->details()->delete();
+                if ($vente->facture) {
+                    $vente->facture()->delete();
+                }
+                $vente->delete();
 
-    /**
-     * Update the specified product.
-     */
-    public function update(Request $request, Product $product)
-    {
-        $request->validate([
-            'product.nom' => 'required|string|max:255',
-            'product.description' => 'required|string',
-            'product.prix_unitaire' => 'required|numeric|min:0',
-            'product.quantite_stock' => 'required|integer|min:0',
-        ]);
+                Toast::info('Vente supprimée avec succès.');
+            } catch (\Exception $e) {
+                report($e);
+                Toast::error('Erreur lors de la suppression de la vente.');
+            }
 
-        $product->update($request->input('product'));
+            return redirect()->back();
+        }
 
-        return redirect()->route('platform.product')
-            ->with('success', 'Produit mis à jour avec succès');
-    }
 
 
     public function transformQuoteToInvoice($id)

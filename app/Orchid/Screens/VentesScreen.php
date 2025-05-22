@@ -17,14 +17,18 @@ use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
 use Orchid\Support\Facades\Toast;
 use PDF;
+use Orchid\Screen\AsSource;
 
 class VentesScreen extends Screen
 {
+    use AsSource;
     /**
      * Query data.
      *
      * @return array
      */
+
+
     public $exists = true;
 
 
@@ -48,8 +52,8 @@ class VentesScreen extends Screen
 
         public function query(): array
             {
-                $baseQuery = Ventes::with(['client', 'details.product', 'facture'])
-                    ->where('id_user', auth()->user()->id);
+                $baseQuery = Ventes::where('archived', false)
+                -> with(['client', 'details.product', 'facture']);
 
                 return [
                     'ventes' => (clone $baseQuery)
@@ -102,6 +106,26 @@ class VentesScreen extends Screen
         {
             return (new VenteController)->addToVentesTable($request);
         }
+
+    public function goToDelete(Request $request): void
+        {
+            $vente = Ventes::with(['facture', 'details'])->findOrFail($$request->get('id_vente'));
+
+            try {
+                $vente->details()->delete();
+                if ($vente->facture) {
+                    $vente->facture()->delete();
+                }
+                $vente->delete();
+
+                Toast::info('Vente supprimée avec succès.');
+            } catch (\Exception $e) {
+                report($e);
+                Toast::error('Erreur lors de la suppression de la vente.');
+            }
+            
+        }
+
         
         
         

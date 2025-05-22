@@ -96,88 +96,111 @@ class VenteUpdateScreen extends Screen
     }
 
     public function update(Request $request)
-    {
-        $request->validate([
-            'vente.id_client' => 'required|exists:clients,id_client',
-            'vente.id_vente' => 'required|exists:ventes,id_vente',
-            'vente.id_facture' => 'required|exists:facture,id_facture',
+{
+    $request->validate([
+        'vente.id_client' => 'required|exists:clients,id_client',
+        'vente.id_vente' => 'required|exists:ventes,id_vente',
+        'vente.id_facture' => 'required|exists:facture,id_facture',
 
-            'produits' => 'required|array',
-            'produits.*' => 'exists:products,id_product',
+        'produits' => 'required|array',
+        'produits.*' => 'exists:products,id_product',
 
-            'quantites' => 'required|string',
+        'quantites' => 'required|string',
 
-            'vente.tva' => 'nullable|boolean',
-            'vente.type_document' => 'required|string|in:devis,facture,avoir',
+        'vente.tva' => 'nullable|boolean',
+        'vente.type_document' => 'required|string|in:devis,facture,avoir',
+    ]);
+
+    $id_client = $request->input('vente.id_client');
+    $tva = $request->boolean('vente.tva');
+    $type_document = $request->input('vente.type_document');
+    $produits = $request->input('produits');
+    $quantites = array_map('intval', explode(',', $request->input('quantites')));
+
+    $id_vente = $request->input('vente.id_vente');
+    $id_facture = $request->input('vente.id_facture');
+
+    if (count($produits) !== count($quantites)) {
+        Toast::error('Nombre de produits et quantités incompatibles.');
+        return back();
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $vente = Ventes::with('details')->findOrFail($id_vente);
+        $facture = Facture::findOrFail($id_facture);
+
+        // Mise à jour de la facture
+        $facture->update([
+            'type_document' => $type_document,
+            'tva' => $tva,
+            'statut' => $type_document === 'devis' ? 'En attente' : ($type_document === 'avoir' ? 'En attente' : 'Validé'),
         ]);
 
-        $id_client = $request->input('vente.id_client');
-        $tva = $request->boolean('vente.tva');  
-        $type_document = $request->input('vente.type_document');
-        $produits = $request->input('produits');
-        $quantites = array_map('intval', explode(',', $request->input('quantites')));
+        // Mise à jour du client de la vente
+        $vente->update([
+            'id_client' => $id_client,
+        ]);
 
-        $id_vente = $request->input('vente.id_vente');
-        $id_facture = $request->input('vente.id_facture');
+        $products = Product::whereIn('id_product', $produits)->get()->keyBy('id_product');
 
-        if (count($produits) !== count($quantites)) {
-            Toast::error('Nombre de produits et quantités incompatibles.');
-            return back();
-        }
+        // Synchronisation des détails de vente
+        $existingDetails = $vente->details->keyBy('id_product');
 
-        try {
-            DB::beginTransaction();
+        $nouveauxProduits = collect();
 
-            $vente = Ventes::findOrFail($id_vente);
-            $facture = Facture::findOrFail($id_facture);
+        foreach ($produits as $index => $idProduct) {
+            $product = $products[$idProduct] ?? null;
+            $quantite = $quantites[$index];
 
-            // Mise à jour facture (TVA est ici !)
-            $facture->update([
-                'type_document' => $type_document,
-                'tva' => $tva,
-                'statut' => $type_document === 'devis' ? 'En attente' : 'Validé',
-            ]);
-
-            // Mise à jour vente (client uniquement)
-            $vente->update([
-                'id_client' => $id_client,
-            ]);
-
-            // Récupérer tous les produits en une seule requête (optimisation)
-            $products = Product::whereIn('id_product', $produits)->get()->keyBy('id_product');
-
-            foreach ($produits as $index => $idProduct) {
-                $product = $products[$idProduct] ?? null;
-                $quantite = $quantites[$index];
-
-                if (!$product) {
-                    throw new \Exception("Produit avec l'ID {$idProduct} introuvable.");
-                }
-
-                $prixUnitaire = $product->prix_unitaire;
-                $prixAvecTva = $tva ? $prixUnitaire * 1.18 : $prixUnitaire;
-                $prixTotal = $quantite * $prixAvecTva;
-
-                DetailVente::updateOrCreate(
-                    ['id_vente' => $vente->id_vente, 'id_product' => $idProduct],
-                    [
-                        'quantite_vendue' => $quantite,
-                        'prix_total' => $prixTotal,
-                        'date_vente' => now(),
-                    ]
-                );
-
-                $product->decrement('quantite_stock', $quantite);
+            if (!$product) {
+                throw new \Exception("Produit avec l'ID {$idProduct} introuvable.");
             }
 
-            DB::commit();
-            Toast::success('Vente et document mis à jour avec succès !');
-            return redirect()->route('platform.ventes');
+            $prixUnitaire = $product->prix_unitaire;
+            $prixAvecTva = $tva ? $prixUnitaire * 1.18 : $prixUnitaire;
+            $prixTotal = $quantite * $prixAvecTva;
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Toast::error('Erreur : ' . $e->getMessage());
-            return back();
+            // Si le détail existe, réajuster le stock
+            $ancienDetail = $existingDetails->get($idProduct);
+            if ($ancienDetail) {
+                $diff = $quantite - $ancienDetail->quantite_vendue;
+                $product->decrement('quantite_stock', $diff);
+                $ancienDetail->update([
+                    'quantite_vendue' => $quantite,
+                    'prix_total' => $prixTotal,
+                    'date_vente' => now(),
+                ]);
+            } else {
+                $product->decrement('quantite_stock', $quantite);
+                DetailVente::create([
+                    'id_vente' => $vente->id_vente,
+                    'id_product' => $idProduct,
+                    'quantite_vendue' => $quantite,
+                    'prix_total' => $prixTotal,
+                    'date_vente' => now(),
+                ]);
+            }
+
+            $nouveauxProduits->push($idProduct);
         }
+
+        // Supprimer les anciens détails non sélectionnés cette fois
+        $toDelete = $existingDetails->keys()->diff($nouveauxProduits);
+        DetailVente::where('id_vente', $vente->id_vente)
+            ->whereIn('id_product', $toDelete)
+            ->delete();
+
+        DB::commit();
+        Toast::success('Vente mise à jour avec succès.');
+        return redirect()->route('platform.ventes');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Toast::error('Erreur : ' . $e->getMessage());
+        return back();
     }
+}
+
 }

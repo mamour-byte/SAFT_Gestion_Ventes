@@ -22,6 +22,8 @@ return new class extends Migration
 
                     $table->unsignedBigInteger('id_facture');
                     $table->foreign('id_facture')->references('id_facture')->on('facture');
+
+                    $table->boolean('archived')->default(false);
                 
                      
                     $table->timestamps(); 
