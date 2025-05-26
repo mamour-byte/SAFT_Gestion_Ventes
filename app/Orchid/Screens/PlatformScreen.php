@@ -71,10 +71,8 @@ class PlatformScreen extends Screen
         $NombreDevis = $StatsDocs['devis'] ?? 0;
         $NombreAvoirs = $StatsDocs['avoirs'] ?? 0;
         $NombreDocuments = $StatsDocs['total'] ?? ($NombreDevis + $NombreAvoirs + $NombreFactures);
+        $moyennejournaliere = $StatsDocs['moyenne_journaliere_factures'] ?? 0;
 
-        $TauxConversion = $NombreDevis > 0 
-            ? round(($NombreFactures / $NombreDevis) * 100, 2)
-            : 0;
 
         return [
 
@@ -105,7 +103,7 @@ class PlatformScreen extends Screen
                 'Devis'    => ['value' => $NombreDevis, 'diff' => 0],
                 'Avoirs'   => ['value' => $NombreAvoirs, 'diff' => 0],
                 'Documents'=> ['value' => $NombreDocuments, 'diff' => 0],
-                'Taux de conversion' => ['value' => $TauxConversion . '%', 'diff' => 0],
+                'Moyenne Journaliere' => ['value' => $moyennejournaliere, 'diff' => 0],
             ],
 
             'courbesData' => [
@@ -149,7 +147,7 @@ class PlatformScreen extends Screen
                 'Devis' => 'metrics.Devis',
                 'Avoirs' => 'metrics.Avoirs',
                 'Total Documents' => 'metrics.Documents',
-                'Taux de conversion' => 'metrics.Taux de conversion',
+                'Moyenne Journaliere' => 'metrics.Moyenne Journaliere',
             ]),
 
             VenteChart::class,

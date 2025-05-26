@@ -27,7 +27,7 @@ class VenteUpdateScreen extends Screen
     public function query(Ventes $vente): array
     {
         $vente->load(['client', 'details.product', 'facture']);
-        $this->vente = $vente;  // ← pour l'utiliser dans layout()
+        $this->vente = $vente;
 
         return [
             'vente' => $vente,

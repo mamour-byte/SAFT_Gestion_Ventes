@@ -18,3 +18,4 @@ Route::post('/ventes/update', [VenteController::class, 'transformQuoteToInvoice'
 
 Route::post('/ventes/supprimer/{id}', [VenteController::class, 'destroy'])
     ->name('ventes.supprimer');
+

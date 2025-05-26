@@ -160,5 +160,11 @@ class VenteController extends Controller
         return back();
     }
 
+    public function exportExcel($type)
+        {
+            $fileName = "ventes_" . $type . "_" . now()->format('Y_m_d_His') . ".xlsx";
+            return Excel::download(new VentesExport($type), $fileName);
+        }
+
 
 }

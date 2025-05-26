@@ -9,6 +9,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "3.1.55",
         "orchid/platform": "^14.49"
     },
     "require-dev": {

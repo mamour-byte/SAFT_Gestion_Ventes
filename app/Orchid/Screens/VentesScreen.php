@@ -18,6 +18,11 @@ use Orchid\Screen\Actions\Link;
 use Orchid\Support\Facades\Toast;
 use PDF;
 use Orchid\Screen\AsSource;
+use App\Exports\VentesExport;
+use Orchid\Screen\Actions\DropDown;
+use Maatwebsite\Excel\Facades\Excel;
+
+
 
 class VentesScreen extends Screen
 {
@@ -34,7 +39,16 @@ class VentesScreen extends Screen
 
     public function commandBar(): iterable
         {
-            return [];
+            return [
+                 DropDown::make('Exporter Excel')
+                    ->icon('filetype-xlsx')
+                    ->list([
+                        Button::make('Toutes')->method('exportVentes')->parameters(['type' => 'all'])->rawClick(),
+                        Button::make('Factures')->method('exportVentes')->parameters(['type' => 'facture'])->rawClick(),
+                        Button::make('Devis')->method('exportVentes')->parameters(['type' => 'devis'])->rawClick(),
+                        Button::make('Avoirs')->method('exportVentes')->parameters(['type' => 'avoir'])->rawClick(),
+                    ]),
+            ];
         }
 
 
@@ -52,28 +66,27 @@ class VentesScreen extends Screen
 
         public function query(): array
             {
-                $baseQuery = Ventes::where('archived', false)
-                -> with(['client', 'details.product', 'facture']);
+                $baseQuery = Ventes::with(['client', 'details.product', 'facture']);
 
                 return [
                     'ventes' => (clone $baseQuery)
                         ->latest()
-                        ->paginate(10),
+                        ->paginate(20),
 
                     'devis' => (clone $baseQuery)
                         ->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))
                         ->latest()
-                        ->paginate(10),
+                        ->paginate(20),
 
                     'factures' => (clone $baseQuery)
                         ->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))
                         ->latest()
-                        ->paginate(10),
+                        ->paginate(20),
 
                     'avoirs' => (clone $baseQuery)
                         ->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))
                         ->latest()
-                        ->paginate(10),
+                        ->paginate(20),
                 ];
             }
 
@@ -124,6 +137,14 @@ class VentesScreen extends Screen
                 Toast::error('Erreur lors de la suppression de la vente.');
             }
             
+        }
+
+    public function exportVentes(Request $request)
+        {
+            $type = $request->get('type', 'all'); // 'facture', 'devis', 'avoir' ou 'all'
+            $fileName = 'ventes_' . $type . '_' . now()->format('Y_m') . '.xlsx';
+
+            return Excel::download(new VentesExport($type), $fileName);
         }
 
         
