@@ -21,6 +21,7 @@ use Orchid\Screen\AsSource;
 use App\Exports\VentesExport;
 use Orchid\Screen\Actions\DropDown;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Database\QueryException;
 
 
 
@@ -66,77 +67,59 @@ class VentesScreen extends Screen
 
         public function query(): array
             {
-                $baseQuery = Ventes::with(['client', 'details.product', 'facture']);
+                try {
+                    $baseQuery = Ventes::with(['client', 'details.product', 'facture']);
 
-                return [
-                    'ventes' => (clone $baseQuery)
-                        ->latest()
-                        ->paginate(20),
-
-                    'devis' => (clone $baseQuery)
-                        ->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))
-                        ->latest()
-                        ->paginate(20),
-
-                    'factures' => (clone $baseQuery)
-                        ->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))
-                        ->latest()
-                        ->paginate(20),
-
-                    'avoirs' => (clone $baseQuery)
-                        ->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))
-                        ->latest()
-                        ->paginate(20),
-                ];
+                    return [
+                        'ventes' => (clone $baseQuery)->latest()->paginate(10),
+                        'devis' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))->latest()->paginate(10),
+                        'factures' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))->latest()->paginate(10),
+                        'avoirs' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))->latest()->paginate(10),
+                        'erreur_mysql' => false,
+                    ];
+                } catch (QueryException $e) {
+                    return [
+                        'erreur_mysql' => true,
+                    ];
+                }
             }
 
 
 
+
     public function layout(): array
-    {
-        return [
-            Layout::tabs([
-                'Nouvelle Vente' => [
-                    NouvVentesRow::class,
-                ],
-                'Historique' => [
-                    HistVentesRow::class,
-                ],
-                'Devis' => [
-                    DevisTable::class,
-                ],
-                'Factures' => [
-                    FactureTable::class,
-                ],
-                'Avoirs' => [
-                    AvoirTable::class,
-                ],
-            ]),
-        ];
-    }
+        {
+            if (isset($this->query()['erreur_mysql']) && $this->query()['erreur_mysql']) {
+                // Affiche la vue d'erreur si une erreur MySQL a été détectée
+                return [
+                    Layout::view('orchid.errors.mysql-error'),
+                ];
+            }
+
+            // Sinon, affiche les layouts habituels
+            return [
+                Layout::tabs([
+                    'Nouvelle Vente' => [NouvVentesRow::class],
+                    'Historique' => [HistVentesRow::class],
+                    'Devis' => [DevisTable::class],
+                    'Factures' => [FactureTable::class],
+                    'Avoirs' => [AvoirTable::class],
+                ]),
+            ];
+        }
+
+
 
     public function addToVentesTable(Request $request)
         {
             return (new VenteController)->addToVentesTable($request);
         }
 
-    public function goToDelete(Request $request): void
+    public function removeVente(Request $request): void
         {
-            $vente = Ventes::with(['facture', 'details'])->findOrFail($$request->get('id_vente'));
-
-            try {
-                $vente->details()->delete();
-                if ($vente->facture) {
-                    $vente->facture()->delete();
-                }
-                $vente->delete();
-
-                Toast::info('Vente supprimée avec succès.');
-            } catch (\Exception $e) {
-                report($e);
-                Toast::error('Erreur lors de la suppression de la vente.');
-            }
-            
+            dd($request->all()); // Pour debug
+            // Ventes::findOrFail($request->get('id'))->delete();
+            // Toast::info(__('Vente supprimée avec succès.'));
         }
 
     public function exportVentes(Request $request)

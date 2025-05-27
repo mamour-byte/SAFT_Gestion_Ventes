@@ -22,10 +22,7 @@ class ProductListLayout extends Table
                 ->render(fn ($product) => $product->description),
 
             TD::make('prix_unitaire', 'Prix Unitaire')
-                ->render(fn ($product) => number_format($product->prix_unitaire, ) . ' F CFA'),
-            
-            TD::make('quantite_stock', 'Quantité en Stock')
-                ->render(fn ($product) => $product->quantite_stock),       
+                ->render(fn ($product) => number_format($product->prix_unitaire, ) . ' F CFA'),     
 
             TD::make('Modifier')
                 ->render(fn (Product $product) => Link::make()

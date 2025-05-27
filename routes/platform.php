@@ -109,6 +109,14 @@ Route::screen('ventes/{vente}/edit', VenteUpdateScreen::class)->name('platform.v
             ->push('Editer Vente', route('platform.ventes.edit', $vente));
     });
 
+Route::get('ventes/{vente}/delete', [VenteController::class, 'destroy'])
+    ->name('platform.ventes.delete')
+    ->breadcrumbs(function (Trail $trail, $vente) {
+        return $trail
+            ->parent('platform.ventes')
+            ->push('Supprimer Vente', route('platform.ventes.delete', $vente));
+    });
+
 
 
 

@@ -41,7 +41,8 @@ class PlatformScreen extends Screen
 
     public function query(): array
     {
-        // Récupération des données
+        try{
+            // Récupération des données
         $factures = Ventes::with(['client', 'details.product', 'facture'])
             ->whereHas('facture', fn($q) => $q->where('type_document', self::DOCUMENT_TYPES['facture']))
             ->latest()->take(5)->get();
@@ -130,7 +131,16 @@ class PlatformScreen extends Screen
             'NombreFactures' => $NombreFactures,
             'TotalGeneré' => $TotalGeneré,
         ];
+        
+        }catch (QueryException $e) {
+                    return [
+                        'erreur_mysql' => true,
+                    ];
+                }
     }
+
+
+
 
     public function layout(): iterable
     {

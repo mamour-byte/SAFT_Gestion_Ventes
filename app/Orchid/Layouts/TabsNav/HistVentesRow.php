@@ -12,6 +12,7 @@ use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
 
 
+
 class HistVentesRow extends Table
 {
     protected $target = 'ventes';
@@ -70,14 +71,12 @@ class HistVentesRow extends Table
                                 ->route('platform.ventes.edit', $vente->id_vente)
                                 ->icon('bs.pencil'),
 
-                            Button::make(__('Supprimer'))
+                            Link::make('Supprimer')
                                 ->icon('bs.trash3')
-                                ->confirm(__('Des que la vente est supprimé, il ne peut plus être récupéré.etes vous sûr de vouloir supprimer la vente ?'))
-                                ->method('goToDelete', [
-                                        'id' => $vente->id_vente,
-                                    ])
-
+                                ->route('platform.ventes.delete', $vente->id_vente)
+                                ->confirm('Êtes-vous sûr de vouloir supprimer cette vente ?'),
                         ])),
+
 
             TD::make('pdf', 'PDF')
                 ->render(function (Ventes $vente) {
