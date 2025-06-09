@@ -28,6 +28,32 @@ class UserListLayout extends Table
     public function columns(): array
     {
         return [
+            TD::make('name', 'Initiale')->render(function ($user) {
+                $initiales = collect(explode(' ', $user->name))
+                    ->map(fn($part) => strtoupper(mb_substr($part, 0, 1)))
+                    ->join('');
+
+                    return <<<HTML
+                        <div style="display: flex; align-items: center;">
+                            <div style="
+                                width: 35px;
+                                height: 35px;
+                                border-radius: 50%;
+                                background-color:rgb(52, 139, 91);
+                                color: white;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: bold;
+                                margin-right: 10px;
+                            ">
+                                {$initiales}
+                            </div>
+                            <!-- <span>{$user->name}</span> -->
+                        </div>
+                    HTML;
+                }),
+
             TD::make('name', __('Nom'))
                 ->sort()
                 ->cantHide()

@@ -15,6 +15,7 @@ use App\Orchid\Layouts\TabsNav\DevisTable;
 use App\Orchid\Layouts\TabsNav\FactureTable;
 use App\Orchid\Layouts\TabsNav\AvoirTable;
 use App\Orchid\Layouts\Charts\typeDocsChart;
+use App\Orchid\Layouts\Charts\ChiffreAffaireChart;
 
 class PlatformScreen extends Screen
 {
@@ -67,6 +68,7 @@ class PlatformScreen extends Screen
         $TotalGeneré = $chartController->totalGenereDuMois();
         $courbesVentesParJour = $chartController->courbesVentesDuMois();
         $StatsDocs = $chartController->statsDocumentsMois();
+        $chiffreAffaire = $chartController->chiffreAffaireParMois();
 
         // Variables nécessaires aux métriques
         $NombreDevis = $StatsDocs['devis'] ?? 0;
@@ -93,8 +95,9 @@ class PlatformScreen extends Screen
 
             'ClientData' => [[
                 'labels' => $venteParClient->pluck('client')->toArray(),
-                'values' => $venteParClient->pluck('total_ventes')->toArray(),
+                'values' => $venteParClient->pluck('total_ca')->toArray(), // <-- ici, 'total_ca' et pas 'total_ventes'
             ]],
+
 
             'metrics' => [
                 'Vente'    => ['value' => $MeilleurVente?->produit ?? 'Aucune vente', 'diff' => $MeilleurVente?->total_ventes ?? 0],
@@ -106,6 +109,16 @@ class PlatformScreen extends Screen
                 'Documents'=> ['value' => $NombreDocuments, 'diff' => 0],
                 'Moyenne Journaliere' => ['value' => $moyennejournaliere, 'diff' => 0],
             ],
+
+            'DataChiffreAffaire' => [[
+                    'labels' => [
+                        'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+                        'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'
+                    ],
+                    'values' => array_values((array) $chiffreAffaire->getData()),
+                ]],
+
+
 
             'courbesData' => [
                 [
@@ -167,7 +180,11 @@ class PlatformScreen extends Screen
                 ClientChart::class,
             ]),
 
-            typeDocsChart::class,
+            Layout::columns([
+                ChiffreAffaireChart::class,
+                typeDocsChart::class,
+                
+            ]),
 
             Layout::columns([
                 Layout::tabs([

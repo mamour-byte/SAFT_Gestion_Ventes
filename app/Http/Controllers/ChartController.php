@@ -49,22 +49,22 @@ class ChartController extends Controller
     }
 
     public function ventesParClient($startDate = null, $endDate = null)
-    {
-        $this->setDefaultDateRange($startDate, $endDate);
+        {
+            $this->setDefaultDateRange($startDate, $endDate);
 
-        $query = Ventes::query()
-            ->selectRaw('clients.nom as client, SUM(details_ventes.quantite_vendue) as total_ventes')
-            ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
-            ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
+            $query = Ventes::query()
+                ->selectRaw('clients.nom as client, SUM(details_ventes.prix_total) as total_ca')
+                ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
+                ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
-        $query = $this->filterFacturesValide($query);
-        $this->applyDateFilter($query, $startDate, $endDate);
+            $query = $this->filterFacturesValide($query);
+            $this->applyDateFilter($query, $startDate, $endDate);
 
-        return $query->groupBy('clients.nom')
-                     ->having('total_ventes', '>', 0)
-                     ->orderBy('total_ventes', 'DESC')
-                     ->get();
-    }
+            return $query->groupBy('client')
+                        ->orderByDesc('total_ca')
+                        ->get();
+        }
+
 
     public function ventesParJourDuMois()
     {
@@ -118,7 +118,7 @@ class ChartController extends Controller
         $this->setDefaultDateRange($startDate, $endDate);
 
         $query = Ventes::query()
-            ->selectRaw('clients.nom as client, SUM(details_ventes.quantite_vendue) as total_ventes')
+            ->selectRaw('clients.nom as client, SUM(details_ventes.prix_total) as total_ca')
             ->join('clients', 'ventes.id_client', '=', 'clients.id_client')
             ->join('details_ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente');
 
@@ -126,9 +126,10 @@ class ChartController extends Controller
         $this->applyDateFilter($query, $startDate, $endDate);
 
         return $query->groupBy('client')
-                     ->orderBy('total_ventes', 'DESC')
-                     ->first();
+                    ->orderByDesc('total_ca')
+                    ->first();
     }
+
 
     public function NombredeFacturesDuMois($mois = null, $annee = null)
     {
@@ -173,35 +174,61 @@ class ChartController extends Controller
     }
 
     public function statsDocumentsMois()
-{
-    $mois = now()->month;
-    $annee = now()->year;
+    {
+        $dateLimite = now()->subDays(7)->startOfDay();
 
-    $documents = DB::table('facture')
-        ->selectRaw('
-            SUM(CASE WHEN type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
-            SUM(CASE WHEN type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs,
-            SUM(CASE WHEN type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
-            COUNT(*) as total_documents
-        ')
-        ->whereMonth('created_at', $mois)
-        ->whereYear('created_at', $annee)
-        ->first();
+        $documents = DB::table('facture')
+            ->selectRaw('
+                SUM(CASE WHEN type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
+                SUM(CASE WHEN type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs,
+                SUM(CASE WHEN type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
+                COUNT(*) as total_documents
+            ')
+            ->whereDate('created_at', '>=', $dateLimite)
+            ->first();
 
-    $jours_ecoules = now()->day;
+        $moyenne_journaliere_factures = $documents->total_factures > 0
+            ? round($documents->total_factures / 7, 2)
+            : 0;
 
-    $moyenne_journaliere_factures = $documents->total_factures > 0
-        ? round($documents->total_factures / $jours_ecoules, 2)
-        : 0;
+        return [
+            'devis' => $documents->total_devis,
+            'avoirs' => $documents->total_avoirs,
+            'factures' => $documents->total_factures,
+            'total' => $documents->total_documents,
+            'moyenne_journaliere_factures' => $moyenne_journaliere_factures,
+        ];
+    }
 
-    return [
-        'devis' => $documents->total_devis,
-        'avoirs' => $documents->total_avoirs,
-        'factures' => $documents->total_factures,
-        'total' => $documents->total_documents,
-        'moyenne_journaliere_factures' => $moyenne_journaliere_factures,
-    ];
-}
+
+
+    public function chiffreAffaireParMois()
+        {
+            $annee = now()->year;
+
+            $ventesParMois = DB::table('details_ventes')
+                ->join('ventes', 'ventes.id_vente', '=', 'details_ventes.id_vente')
+                ->join('facture', 'facture.id_facture', '=', 'ventes.id_facture')
+                ->selectRaw('
+                    MONTH(details_ventes.date_vente) as mois, 
+                    SUM(details_ventes.prix_total) as total_chiffre_affaire
+                ')
+                ->whereYear('details_ventes.date_vente', $annee)
+                ->where('facture.type_document', 'facture')
+                ->where('facture.statut', 'validé')
+                ->groupBy('mois')
+                ->orderBy('mois')
+                ->get();
+
+            // Structure le résultat sous forme de tableau [1 => 0, 2 => 12000, ..., 12 => 0]
+            $result = array_fill(1, 12, 0); // initialise tous les mois à 0
+
+            foreach ($ventesParMois as $row) {
+                $result[$row->mois] = round($row->total_chiffre_affaire, 2);
+            }
+
+            return response()->json($result);
+        }
 
 
 

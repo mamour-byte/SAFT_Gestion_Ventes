@@ -71,10 +71,10 @@ class VentesScreen extends Screen
                     $baseQuery = Ventes::with(['client', 'details.product', 'facture']);
 
                     return [
-                        'ventes' => (clone $baseQuery)->latest()->paginate(10),
-                        'devis' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))->latest()->paginate(10),
-                        'factures' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))->latest()->paginate(10),
-                        'avoirs' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))->latest()->paginate(10),
+                        'ventes' => (clone $baseQuery)->latest()->paginate(25),
+                        'devis' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))->latest()->paginate(20),
+                        'factures' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))->latest()->paginate(20),
+                        'avoirs' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))->latest()->paginate(20),
                         'erreur_mysql' => false,
                     ];
                 } catch (QueryException $e) {
@@ -101,8 +101,8 @@ class VentesScreen extends Screen
                 Layout::tabs([
                     'Nouvelle Vente' => [NouvVentesRow::class],
                     'Historique' => [HistVentesRow::class],
-                    'Devis' => [DevisTable::class],
                     'Factures' => [FactureTable::class],
+                    'Devis' => [DevisTable::class],
                     'Avoirs' => [AvoirTable::class],
                 ]),
             ];

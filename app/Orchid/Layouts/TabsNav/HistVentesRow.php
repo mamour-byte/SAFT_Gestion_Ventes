@@ -20,6 +20,12 @@ class HistVentesRow extends Table
     protected function columns(): array
     {
         return [
+            TD::make('date', 'Date')
+                ->render(function ($vente) {
+                    return $vente->created_at->format('d/m/Y');
+                }),
+
+
             TD::make('client', 'Client')
                 ->render(function (Ventes $vente) {
                     return $vente->client ? $vente->client->nom : 'Client inconnu';

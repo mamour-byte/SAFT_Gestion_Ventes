@@ -10,137 +10,157 @@ use App\Models\Facture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Orchid\Support\Facades\Toast;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\VentesExport;
 
 class VenteController extends Controller
 {
     /**
-     * Générer un nouveau numéro de facture au format INV-000001
+     * Générer un numéro unique par type de document (ex: FAC-202506-0001, DEVIS-202506-0001, AVO-202506-0001)
      */
-    private function generateNumeroFacture()
+    private function generateNumeroDocument(string $type)
     {
-        $lastFacture = Facture::orderBy('numero_facture', 'desc')->first();
+        $prefix = match ($type) {
+            'facture' => 'FAC',
+            'devis' => 'DEVIS',
+            'avoir' => 'AVO',
+            default => 'DOC',
+        };
 
-        if ($lastFacture && preg_match('/INV-(\d+)/', $lastFacture->numero_facture, $matches)) {
-            $lastNumber = (int) $matches[1];
-        } else {
-            $lastNumber = 0;
-        }
+        $base = $prefix . '-' . now()->format('Ym');
 
-        $newNumber = $lastNumber + 1;
-        return 'INV-' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        $count = Facture::where('type_document', $type)
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->count() + 1;
+
+        return sprintf('%s-%04d', $base, $count);
     }
 
     /**
-     * Ajouter une vente et mettre à jour le stock
+     * Ajouter une vente et créer une facture / devis / avoir
      */
     public function addToVentesTable(Request $request)
-        {
-            $request->validate([
-                'vente.id_client' => 'required|exists:clients,id_client',
-                'vente.produits' => 'required|array',
-                'vente.produits.*' => 'exists:products,id_product',
-                'vente.quantites' => 'required|string',
-                'vente.tva' => 'nullable|boolean',
-                'vente.type_document' => 'required|string|in:facture,devis,avoir',
+    {
+        $request->validate([
+            'vente.id_client' => 'required|exists:clients,id_client',
+            'vente.produits' => 'required|array',
+            'vente.produits.*' => 'exists:products,id_product',
+            'vente.quantites' => 'required|string',
+            'vente.tva' => 'nullable|boolean',
+            'vente.type_document' => 'required|string|in:facture,devis,avoir',
+        ]);
+
+        $venteData = $request->input('vente');
+        $quantites = array_map('intval', explode(',', $venteData['quantites']));
+        $typeDocument = $venteData['type_document'];
+
+        if (count($venteData['produits']) !== count($quantites)) {
+            Toast::error('Nombre de produits et quantités incompatible');
+            return back();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Numéro unique par type
+            $numeroFacture = $this->generateNumeroDocument($typeDocument);
+
+            $facture = Facture::create([
+                'id_client' => $venteData['id_client'],
+                'id_user' => $request->user()->id,
+                'type_document' => $typeDocument,
+                'tva' => $venteData['tva'] ?? false,
+                'numero_facture' => $numeroFacture,
+                'statut' => match ($typeDocument) {
+                    'devis', 'avoir' => 'En attente',
+                    'facture' => 'Validé',
+                    default => 'En attente',
+                },
             ]);
 
-            $venteData = $request->input('vente');
-            $quantites = array_map('intval', explode(',', $venteData['quantites']));
-            $typeDocument = $venteData['type_document'];
+            $vente = Ventes::create([
+                'id_client' => $venteData['id_client'],
+                'id_user' => $request->user()->id,
+                'id_facture' => $facture->id_facture,
+                'tva' => $venteData['tva'] ?? false,
+            ]);
 
-            if (count($venteData['produits']) !== count($quantites)) {
-                Toast::error('Nombre de produits et quantités incompatible');
-                return back();
-            }
+            $applyTva = $venteData['tva'] ?? false;
 
-            try {
-                DB::beginTransaction();
+            foreach ($venteData['produits'] as $index => $idProduct) {
+                $product = Product::findOrFail($idProduct);
+                $quantite = $quantites[$index];
 
-                // Générer un numéro de document pour tous les types (facture, devis, avoir)
-                $numeroFacture = $this->generateNumeroFacture(); // On génère un numéro pour tous les types de documents
+                $prixUnitaire = $product->prix_unitaire;
+                $prixAvecTva = $applyTva ? $prixUnitaire * 1.18 : $prixUnitaire;
+                $prixTotal = $quantite * $prixAvecTva;
 
-                // Création de la facture, devis, ou avoir
-                $facture = Facture::create([
-                    'id_client' => $venteData['id_client'],
-                    'id_user' => $request->user()->id,
-                    'type_document' => $typeDocument,
-                    'tva' => $venteData['tva'] ?? false,
-                    'numero_facture' => $numeroFacture,
-                    'statut' => match ($typeDocument) {
-                        'devis', 'avoir' => 'En attente',
-                        'facture' => 'Validé',
-                        default => 'En attente',
-                    },
-
+                DetailVente::create([
+                    'id_vente' => $vente->id_vente,
+                    'id_product' => $idProduct,
+                    'quantite_vendue' => $quantite,
+                    'prix_total' => $prixTotal,
+                    'date_vente' => now(),
                 ]);
 
-                // Création de la vente
-                $vente = Ventes::create([
-                    'id_client' => $venteData['id_client'],
-                    'id_user' => $request->user()->id,
-                    'id_facture' => $facture->id_facture,
-                    'tva' => $venteData['tva'] ?? false,
-                ]);
-
-                $applyTva = $venteData['tva'] ?? false;
-
-                // Ajout des détails de vente et mise à jour du stock
-                foreach ($venteData['produits'] as $index => $idProduct) {
-                    $product = Product::findOrFail($idProduct);
-                    $quantite = $quantites[$index];
-
-                    $prixUnitaire = $product->prix_unitaire;
-                    $prixAvecTva = $applyTva ? $prixUnitaire * 1.18 : $prixUnitaire;
-                    $prixTotal = $quantite * $prixAvecTva;
-
-                    DetailVente::create([
-                        'id_vente' => $vente->id_vente,
-                        'id_product' => $idProduct,
-                        'quantite_vendue' => $quantite,
-                        'prix_total' => $prixTotal,
-                        'date_vente' => now(),
-                    ]);
-
-                    $product->decrement('quantite_stock', $quantite);
-                }
-
-                DB::commit();
-                Toast::success('Vente et document enregistrés avec succès !');
-                return back();
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Toast::error('Erreur : ' . $e->getMessage());
-                return back();
+                $product->decrement('quantite_stock', $quantite);
             }
+
+            DB::commit();
+            Toast::success('Vente et document enregistrés avec succès !');
+            return back();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Toast::error('Erreur : ' . $e->getMessage());
+            return back();
         }
-
+    }
 
     /**
-     * Supprimer une vente et mettre à jour le stock
+     * Mise à jour produit
+     */
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'product.nom' => 'required|string|max:255',
+            'product.description' => 'required|string',
+            'product.prix_unitaire' => 'required|numeric|min:0',
+            'product.quantite_stock' => 'required|integer|min:0',
+        ]);
+
+        $product->update($request->input('product'));
+
+        return redirect()->route('platform.product')
+            ->with('success', 'Produit mis à jour avec succès');
+    }
+
+    /**
+     * Supprimer une vente
      */
     public function destroy($id)
-        {
-            $vente = Ventes::with(['facture', 'details'])->findOrFail($id);
+    {
+        $vente = Ventes::with(['facture', 'details'])->findOrFail($id);
 
-            try {
-                $vente->details()->delete();
-                if ($vente->facture) {
-                    $vente->facture()->delete();
-                }
-                $vente->delete();
-
-                Toast::info('Vente supprimée avec succès.');
-            } catch (\Exception $e) {
-                report($e);
-                Toast::error('Erreur lors de la suppression de la vente.');
+        try {
+            $vente->details()->delete();
+            if ($vente->facture) {
+                $vente->facture()->delete();
             }
+            $vente->delete();
 
-            return redirect()->back();
+            Toast::info('Vente supprimée avec succès.');
+        } catch (\Exception $e) {
+            report($e);
+            Toast::error('Erreur lors de la suppression de la vente.');
         }
 
+        return redirect()->back();
+    }
 
-
+    /**
+     * Transformer un devis en facture
+     */
     public function transformQuoteToInvoice($id)
     {
         $facture = Facture::findOrFail($id);
@@ -153,7 +173,7 @@ class VenteController extends Controller
         $facture->update([
             'type_document' => 'facture',
             'statut' => 'Validé',
-            'numero_facture' => $this->generateNumeroFacture(),
+            'numero_facture' => $this->generateNumeroDocument('facture'),
         ]);
 
         Toast::success('Devis transformé en facture avec succès !');
@@ -161,10 +181,8 @@ class VenteController extends Controller
     }
 
     public function exportExcel($type)
-        {
-            $fileName = "ventes_" . $type . "_" . now()->format('Y_m_d_His') . ".xlsx";
-            return Excel::download(new VentesExport($type), $fileName);
-        }
-
-
+    {
+        $fileName = "ventes_" . $type . "_" . now()->format('Y_m_d_His') . ".xlsx";
+        return Excel::download(new VentesExport($type), $fileName);
+    }
 }

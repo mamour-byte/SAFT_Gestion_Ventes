@@ -76,11 +76,6 @@ class ProductEditScreen extends Screen
                     ->type('number')
                     ->step('0.01')
                     ->required(),
-    
-                Input::make('product.quantite_stock')
-                    ->title('Quantité en stock')
-                    ->type('number')
-                    ->required(),
             ]),
         ];
     }

@@ -42,7 +42,7 @@ class ClientsScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Link::make(__('Add'))
+            Link::make(__('Ajouter'))
                     ->icon('bs.plus-circle')
                     ->route('platform.clients.add'),
         ];
