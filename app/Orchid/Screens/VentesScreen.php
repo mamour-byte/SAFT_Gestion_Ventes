@@ -12,6 +12,7 @@ use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 use Illuminate\Http\Request;
 use App\Models\Ventes;
+use App\Models\Facture;
 use \App\Http\Controllers\pdfController;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\Link;
@@ -48,6 +49,7 @@ class VentesScreen extends Screen
                         Button::make('Factures')->method('exportVentes')->parameters(['type' => 'facture'])->rawClick(),
                         Button::make('Devis')->method('exportVentes')->parameters(['type' => 'devis'])->rawClick(),
                         Button::make('Avoirs')->method('exportVentes')->parameters(['type' => 'avoir'])->rawClick(),
+
                     ]),
             ];
         }
@@ -75,6 +77,11 @@ class VentesScreen extends Screen
                         'devis' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'devis'))->latest()->paginate(20),
                         'factures' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'facture'))->latest()->paginate(20),
                         'avoirs' => (clone $baseQuery)->whereHas('facture', fn($q) => $q->where('type_document', 'avoir'))->latest()->paginate(20),
+                        'factures_transformees' => (clone $baseQuery)->whereHas('facture', function ($q) {$q->where('type_document', 'facture')
+                                ->where('statut', 'like', '%transformée en avoir%');
+                            })->latest()->paginate(20),
+
+
                         'erreur_mysql' => false,
                     ];
                 } catch (QueryException $e) {
@@ -96,7 +103,6 @@ class VentesScreen extends Screen
                 ];
             }
 
-            // Sinon, affiche les layouts habituels
             return [
                 Layout::tabs([
                     'Nouvelle Vente' => [NouvVentesRow::class],
@@ -104,6 +110,7 @@ class VentesScreen extends Screen
                     'Factures' => [FactureTable::class],
                     'Devis' => [DevisTable::class],
                     'Avoirs' => [AvoirTable::class],
+
                 ]),
             ];
         }
@@ -115,20 +122,14 @@ class VentesScreen extends Screen
             return (new VenteController)->addToVentesTable($request);
         }
 
-    public function removeVente(Request $request): void
-        {
-            dd($request->all()); // Pour debug
-            // Ventes::findOrFail($request->get('id'))->delete();
-            // Toast::info(__('Vente supprimée avec succès.'));
-        }
-
     public function exportVentes(Request $request)
         {
-            $type = $request->get('type', 'all'); // 'facture', 'devis', 'avoir' ou 'all'
-            $fileName = 'ventes_' . $type . '_' . now()->format('Y_m') . '.xlsx';
+            $type = $request->get('type', 'all'); 
+            $fileName = 'ventes_' . $type . '_' . now()->format('Y_m_d_His') . '.xlsx';
 
             return Excel::download(new VentesExport($type), $fileName);
         }
+
 
         
         

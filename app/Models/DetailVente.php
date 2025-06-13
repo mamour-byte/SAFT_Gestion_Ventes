@@ -19,6 +19,10 @@ class DetailVente extends Model
         'date_vente',
         'quantite_vendue',
         'prix_total',
+        'numeroCommande',
+        'dateLivraison',
+        'numeroBonLivraison',
+
     ];
 
     public function vente()

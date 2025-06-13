@@ -16,11 +16,14 @@ use App\Orchid\Screens\ClientsScreen;
 use App\Orchid\Screens\ClientAddScreen;
 use App\Orchid\Screens\ClientEditScreen;
 use App\Orchid\Screens\VentesScreen;
+use App\Orchid\Screens\BordereauPreview;
 use App\Orchid\Screens\FactureScreen;
 use App\Orchid\Screens\DashbordScreen;
 use App\Http\Controllers\pdfController;
 use App\Orchid\Screens\FacturePreviewScreen;
 use App\Orchid\Screens\VenteUpdateScreen;
+use App\Orchid\Screens\VenteAvoirScreen;
+use App\Orchid\Screens\VenteFactureScreen;
 
 
 /*
@@ -102,12 +105,12 @@ Route::screen('/ventes', VentesScreen::class)->name('platform.ventes')
         ->push('Ventes', route('platform.ventes'));
 });
 //------------------------update vente----------------------
-Route::screen('ventes/{vente}/edit', VenteUpdateScreen::class)->name('platform.ventes.edit')
-    ->breadcrumbs(function (Trail $trail, $vente) {
-        return $trail
-            ->parent('platform.ventes')
-            ->push('Editer Vente', route('platform.ventes.edit', $vente));
-    });
+Route::screen('ventes/{id}/transformer-avoir', VenteAvoirScreen::class)
+    ->name('platform.ventes.transformer_avoir');
+
+Route::screen('ventes/{id}/generer_facture', VenteFactureScreen::class)
+    ->name('platform.ventes.generer_facture');
+
 
 Route::get('ventes/{vente}/delete', [VenteController::class, 'destroy'])
     ->name('platform.ventes.delete')
@@ -151,7 +154,7 @@ Route::screen('users', UserListScreen::class)
 
 // -----------------Platform Facture----------------------
 Route::screen('facture/preview', FacturePreviewScreen::class)->name('platform.facture.preview');
-Route::get('facture/download', [FactureController::class, 'download'])->name('platform.facture.download');
-
+// Route::get('facture/download', [FactureController::class, 'download'])->name('platform.facture.download');
+Route::screen('Bordereau/preview', BordereauPreview::class)->name('platform.bordereau.preview');
 
 

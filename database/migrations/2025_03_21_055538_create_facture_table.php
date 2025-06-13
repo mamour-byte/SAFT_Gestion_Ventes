@@ -18,9 +18,9 @@ return new class extends Migration
             $table->foreign('id_client')->references('id_client')->on('clients');
             
             $table->unsignedBigInteger('id_user');
-            $table->foreign('id_user')->references('id')->on('users');
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
             
-            $table->enum('statut', ['Validé','En attente','Annulé'])->default('En attente');
+            $table->string('statut');
             $table->timestamps();
 
             $table->string('numero_facture')->nullable()->unique();
@@ -28,6 +28,9 @@ return new class extends Migration
             $table->boolean('tva')->default(false);
 
             $table->enum('type_document', ['facture', 'devis','avoir'])->default('facture');
+
+            $table->string('reference_facture')->nullable(); // l’avoir fait référence à une facture
+            $table->string('reference_avoir')->nullable();
 
         });
     }

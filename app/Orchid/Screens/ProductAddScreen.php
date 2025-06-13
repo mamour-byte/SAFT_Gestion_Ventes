@@ -73,11 +73,6 @@ class ProductAddScreen extends Screen
                     ->required()
                     ->placeholder('Entrez le prix unitaire'),
 
-                Input::make('product.quantite_stock')
-                    ->title('Quantité en stock')
-                    ->type('number')
-                    ->required()
-                    ->placeholder('Entrez la quantité disponible'),
             ]),
         ];
         

@@ -173,32 +173,34 @@ class ChartController extends Controller
             ->get();
     }
 
+    
     public function statsDocumentsMois()
-    {
-        $dateLimite = now()->subDays(7)->startOfDay();
+        {
+            $dateLimite = now()->subDays(7)->startOfDay();
 
-        $documents = DB::table('facture')
-            ->selectRaw('
-                SUM(CASE WHEN type_document = "devis" THEN 1 ELSE 0 END) as total_devis,
-                SUM(CASE WHEN type_document = "avoir" THEN 1 ELSE 0 END) as total_avoirs,
-                SUM(CASE WHEN type_document = "facture" THEN 1 ELSE 0 END) as total_factures,
-                COUNT(*) as total_documents
-            ')
-            ->whereDate('created_at', '>=', $dateLimite)
-            ->first();
+            $documents = DB::table('facture')
+                ->selectRaw('
+                    SUM(CASE WHEN type_document = "devis" AND statut = "en attente" THEN 1 ELSE 0 END) as total_devis,
+                    SUM(CASE WHEN type_document = "avoir" AND statut = "en attente" THEN 1 ELSE 0 END) as total_avoirs,
+                    SUM(CASE WHEN type_document = "facture" AND statut = "validé" THEN 1 ELSE 0 END) as total_factures
+                ')
+                ->whereDate('created_at', '>=', $dateLimite)
+                ->first();
 
-        $moyenne_journaliere_factures = $documents->total_factures > 0
-            ? round($documents->total_factures / 7, 2)
-            : 0;
+            $total_documents = $documents->total_devis + $documents->total_avoirs + $documents->total_factures;
 
-        return [
-            'devis' => $documents->total_devis,
-            'avoirs' => $documents->total_avoirs,
-            'factures' => $documents->total_factures,
-            'total' => $documents->total_documents,
-            'moyenne_journaliere_factures' => $moyenne_journaliere_factures,
-        ];
-    }
+            $moyenne_journaliere_factures = $documents->total_factures > 0
+                ? round($documents->total_factures / 7, 2)
+                : 0;
+
+            return [
+                'devis' => $documents->total_devis,
+                'avoirs' => $documents->total_avoirs,
+                'factures' => $documents->total_factures,
+                'total' => $total_documents,
+                'moyenne_journaliere_factures' => $moyenne_journaliere_factures,
+            ];
+        }
 
 
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nom', 100); 
             $table->text('description');
             $table->decimal('prix_unitaire', 10, 2); 
-            $table->integer('quantite_stock'); 
+            $table->integer('quantite_stock')->nullable(); 
             $table->boolean('archived')->default(false);
             $table->timestamps();
         });

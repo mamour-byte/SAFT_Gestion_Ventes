@@ -15,15 +15,13 @@ return new class extends Migration
                     $table->id('id_vente'); 
 
                     $table->unsignedBigInteger('id_user'); 
-                    $table->foreign('id_user')->references('id')->on('users');
+                    $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
 
                     $table->unsignedBigInteger('id_client');
                     $table->foreign('id_client')->references('id_client')->on('clients'); 
 
                     $table->unsignedBigInteger('id_facture');
                     $table->foreign('id_facture')->references('id_facture')->on('facture');
-
-                    $table->boolean('archived')->default(false);
                 
                      
                     $table->timestamps(); 

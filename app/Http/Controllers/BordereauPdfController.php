@@ -1,14 +1,22 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Ventes;  
+use App\Models\Ventes;
 use PDF;
 use App\Models\Clients;
 
-class FacturePdfController extends Controller
+
+class BordereauPdfController extends Controller
 {
+    private function generateNumeroBonLivraison()
+{
+    // Compte tous les détails de vente ayant un numéro de bon de livraison (ou toutes les ventes)
+    $count = \App\Models\Ventes::count() + 1;
+    return 'BL-' . str_pad($count, 6, '0', STR_PAD_LEFT) . '-' . now()->format('Ymd');
+}
+
     public function generate($id)
     {
         $vente = Ventes::with(['client', 'details.product', 'facture'])->findOrFail($id);
@@ -47,6 +55,11 @@ class FacturePdfController extends Controller
                 $reference = $facture->reference_facture ?? 'Aucune';
             }
         }
+        $detail = $vente->details->first();
+        $numeroCommande = $detail->numeroCommande ?? '-';
+        $dateLivraison = $detail->dateLivraison ?? '-';
+        $numeroBonLivraison = $detail->numeroBonLivraison ?? '-';
+
 
 
         $pdfData = [
@@ -71,11 +84,16 @@ class FacturePdfController extends Controller
             'totalAmount' => $totalAmount,
             'tva_status' => $tva_status,
             'type_document' => ucfirst($vente->facture->type_document ?? '-'),
+        
+            'numero_bon_livraison' => $numeroBonLivraison,
+            'numero_commande' => $numeroCommande,
+            'date_livraison' => $dateLivraison,
+        
         ];
 
 
-        $pdf = PDF::loadView('pdf.facturepdf', $pdfData);
-        return $pdf->stream('Facture ' . $vente->client->nom . ' ' . now()->translatedFormat('F Y') . '.pdf');
+        $pdf = PDF::loadView('pdf.bordereaupdf', $pdfData);
+        return $pdf->stream('Bordereau ' . $vente->client->nom . ' ' . now()->translatedFormat('F Y') . '.pdf');
 
     }
 }

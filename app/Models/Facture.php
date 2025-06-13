@@ -21,6 +21,8 @@ class Facture extends Model
         'tva',
         'numero_facture',
         'statut',
+        'reference_facture',
+        'reference_avoir', 
     ];
 
     protected static function boot()

@@ -44,10 +44,6 @@ class HistVentesRow extends Table
                     })->implode('<br>');
                 }),
 
-            TD::make('tva', 'TVA Applicable')
-                ->render(function (Ventes $vente) {
-                    return ($vente->facture && $vente->facture->tva) ? 'Oui' : 'Non';
-                }),
 
             TD::make('Type de document', 'Type de document')
                 ->render(function (Ventes $vente) {
@@ -67,21 +63,29 @@ class HistVentesRow extends Table
                         return "<span class='{$color}'>{$statut}</span>";
                     }),
                 
-                TD::make(__('Actions'))
-                    ->align(TD::ALIGN_CENTER)
-                    ->width('100px')
-                    ->render(fn (Ventes $vente) => DropDown::make()
-                        ->icon('bs.three-dots-vertical')
-                        ->list([
-                            Link::make(__('Modifier'))
-                                ->route('platform.ventes.edit', $vente->id_vente)
-                                ->icon('bs.pencil'),
 
-                            Link::make('Supprimer')
-                                ->icon('bs.trash3')
-                                ->route('platform.ventes.delete', $vente->id_vente)
-                                ->confirm('Êtes-vous sûr de vouloir supprimer cette vente ?'),
-                        ])),
+
+            TD::make('Action')
+                ->render(function (Ventes $vente) {
+                    $facture = $vente->facture;
+                    if (!$facture) {
+                        return 'Aucun document';
+                    }
+
+                    return match ($facture->type_document) {
+                        'facture' => Link::make('Transformer en Avoir')
+                                    ->icon('refresh')
+                                    ->route('platform.ventes.transformer_avoir', ['id' => $vente->id_vente])
+                                    ->confirm('Confirmez-vous la transformation de cette facture en avoir ?'),
+
+                        'avoir', 'devis' => Link::make('Générer une Facture')
+                                    ->icon('file-text')
+                                    ->route('platform.ventes.generer_facture', ['id' => $vente->id_vente])
+                                    ->confirm('Voulez-vous générer une facture pour ce document ?'),
+
+                        default => 'Action inconnue',
+                    };
+                }),
 
 
             TD::make('pdf', 'PDF')
@@ -94,6 +98,16 @@ class HistVentesRow extends Table
                         ->route('platform.facture.preview', [
                             'id' => $vente->id_vente,
                             'type' => $type,
+                        ]);
+                }),
+
+            TD::make('BorderauLivraison', 'Bordereau de Livraison')
+                ->render(function (Ventes $vente) {
+                    return Link::make('Bordereau')
+                        ->icon('file-earmark-text')
+                        ->class('btn btn-primary btn-sm')
+                        ->route('platform.bordereau.preview', [
+                            'id' => $vente->id_vente,
                         ]);
                 }),
             

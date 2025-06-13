@@ -28,8 +28,7 @@ class NouvVentesRow extends Rows
             Group::make([
                 Select::make('vente.produits')   
                     ->title('Produits')
-                    ->options(Product::where('quantite_stock', '>', 0)
-                    ->where('archived', 0)
+                    ->options(Product::where('archived', 0)
                     ->pluck('nom', 'id_product'))
                     ->multiple()
                     ->required()
@@ -48,14 +47,24 @@ class NouvVentesRow extends Rows
                 ->options([
                     'devis' => 'Devis',
                     'facture' => 'Facture',
-                    'avoir' => 'Avoir',
                 ])
                 ->required()
                 ->help('Choisissez le type de document'),
 
-                Switcher::make('vente.tva')
+            Switcher::make('vente.tva')
                 ->title('Appliquer la TVA 18%')
                 ->sendTrueOrFalse(),
+
+            Group::make([
+                Input::make('vente.numeroCommande')
+                ->title('Numero de Bon de Commande')
+                ->help('Entrez le numero de commande'),
+
+                Input::make('vente.dateLivraison')
+                    ->title('Date de Livraison')
+                    ->help('Entrer la date de livraison')
+                    ->type('date')
+            ]),
                 
             Button::make('Nouvelle Vente')
                 ->method('addToVentesTable')

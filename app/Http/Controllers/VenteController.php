@@ -49,6 +49,8 @@ class VenteController extends Controller
             'vente.quantites' => 'required|string',
             'vente.tva' => 'nullable|boolean',
             'vente.type_document' => 'required|string|in:facture,devis,avoir',
+            'vente.numeroCommande' => 'nullable|string|max:255', 
+            'vente.dateLivraison' => 'nullable|date',  
         ]);
 
         $venteData = $request->input('vente');
@@ -87,6 +89,7 @@ class VenteController extends Controller
             ]);
 
             $applyTva = $venteData['tva'] ?? false;
+            $numeroBonLivraison = 'BL-'  . now()->format('Ym') .'-'. str_pad(DetailVente::count() + 1, 6, '0', STR_PAD_LEFT) ;
 
             foreach ($venteData['produits'] as $index => $idProduct) {
                 $product = Product::findOrFail($idProduct);
@@ -102,6 +105,9 @@ class VenteController extends Controller
                     'quantite_vendue' => $quantite,
                     'prix_total' => $prixTotal,
                     'date_vente' => now(),
+                    'numeroCommande' => $venteData['numeroCommande'] ?? null, 
+                    'dateLivraison' => $venteData['dateLivraison'] ?? null, 
+                    'numeroBonLivraison' => $numeroBonLivraison,
                 ]);
 
                 $product->decrement('quantite_stock', $quantite);
@@ -126,7 +132,7 @@ class VenteController extends Controller
             'product.nom' => 'required|string|max:255',
             'product.description' => 'required|string',
             'product.prix_unitaire' => 'required|numeric|min:0',
-            'product.quantite_stock' => 'required|integer|min:0',
+            'product.quantite_stock' => 'integer|min:0',
         ]);
 
         $product->update($request->input('product'));
@@ -135,28 +141,7 @@ class VenteController extends Controller
             ->with('success', 'Produit mis à jour avec succès');
     }
 
-    /**
-     * Supprimer une vente
-     */
-    public function destroy($id)
-    {
-        $vente = Ventes::with(['facture', 'details'])->findOrFail($id);
-
-        try {
-            $vente->details()->delete();
-            if ($vente->facture) {
-                $vente->facture()->delete();
-            }
-            $vente->delete();
-
-            Toast::info('Vente supprimée avec succès.');
-        } catch (\Exception $e) {
-            report($e);
-            Toast::error('Erreur lors de la suppression de la vente.');
-        }
-
-        return redirect()->back();
-    }
+    
 
     /**
      * Transformer un devis en facture

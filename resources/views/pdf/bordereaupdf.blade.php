@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Facture n° {{ $numero_facture }}</title>
+    <title>Bon de Livraison n° {{ $numero_bon_livraison }} </title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -48,15 +48,6 @@
             padding: 8px;
             border: 1px solid #999;
         }
-        .totals .label {
-            text-align: right;
-            width: 80%;
-            background-color: #f9f9f9;
-        }
-        .totals .value {
-            text-align: right;
-            width: 20%;
-        }
         .footer {
             margin-top: 50px;
             padding-top: 20px;
@@ -69,17 +60,12 @@
             clear: both;
             margin-bottom: 20px;
         }
-        .tva-status {
-            margin-top: 10px;
-            font-weight: bold;
-            text-align: right;
-        }
     </style>
 </head>
 <body>
 
-    <h1>{{$type_document}}</h1>
-    <h2>N° {{ $numero_facture }}</h2>
+    <h1>Bordereau de Livraison</h1>
+    <h2>N° {{ $numero_bon_livraison }}</h2>
 
     <div class="company">
         <strong>SAFT</strong><br>
@@ -94,16 +80,14 @@
         {{ $client_adresse }}<br>
         Tél: {{ $client_telephone }}<br>
         Email: {{ $client_email }}<br>
-        Ninea: {{ $client_NumeroNinea }} <br>
-        RC: {{ $Client_NumeroRC }}<br>
     </div>
 
     <div class="clearfix"></div>
 
     <div class="Infos">
-        <strong>Date de {{$type_document}} :</strong> {{ $date_facture }} <br>
-        <strong>Reference :</strong> {{ $reference }} <br>
-        <strong>Bon de Livraison :</strong> {{ $reference }}
+        <strong>Bon de Livraison N° :</strong> {{ $numero_bon_livraison }}<br>
+        <strong>Date de Livraison :</strong> {{ $date_livraison }}<br>
+        <strong>Numero de Commande :</strong> {{ $numero_commande }} <br>
     </div>
 
     <table>
@@ -126,23 +110,6 @@
             @endforeach
         </tbody>
     </table>
-
-    <table class="totals">
-        <tr>
-            <td class="label"><strong>Sous-total (HT)</strong></td>
-            <td class="value">{{ number_format($subtotal, 2, ',', ' ') }} F CFA</td>
-        </tr>
-        <tr>
-            <td class="label"><strong>TVA ({{ $taxRate }}%)</strong></td>
-            <td class="value">{{ number_format($taxAmount, 2, ',', ' ') }} F CFA</td>
-        </tr>
-        <tr>
-            <td class="label"><strong>Total TTC</strong></td>
-            <td class="value"><strong>{{ number_format($totalAmount, 2, ',', ' ') }} F CFA</strong></td>
-        </tr>
-    </table>
-
-    <p class="tva-status">{{ $tva_status }}</p>
 
     <footer>
         <div class="footer">
