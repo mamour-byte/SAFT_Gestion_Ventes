@@ -37,16 +37,17 @@ class FacturePdfController extends Controller
 
         $tva_status = $factureTvaIncluse ? 'TVA incluse' : 'TVA non incluse';
 
-        $reference = 'Aucun';
+        $reference = '-';
         $facture = $vente->facture;
 
         if ($facture) {
             if ($facture->type_document === 'facture') {
-                $reference = $facture->reference_avoir ?? 'Aucune';
+                $reference = $facture->reference_avoir ?? '-';
             } elseif ($facture->type_document === 'avoir') {
-                $reference = $facture->reference_facture ?? 'Aucune';
+                $reference = $facture->reference_facture ?? '-';
             }
         }
+        
 
 
         $pdfData = [

@@ -103,7 +103,6 @@
     <div class="Infos">
         <strong>Date de {{$type_document}} :</strong> {{ $date_facture }} <br>
         <strong>Reference :</strong> {{ $reference }} <br>
-        <strong>Bon de Livraison :</strong> {{ $reference }}
     </div>
 
     <table>

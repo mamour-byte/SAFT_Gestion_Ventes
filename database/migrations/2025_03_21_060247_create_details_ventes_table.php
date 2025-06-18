@@ -25,7 +25,7 @@ return new class extends Migration
         
         $table->integer('quantite_vendue');
 
-        $table->string('NumeroCommande');
+        $table->string('NumeroCommande')->nullable();
 
         $table->string('numeroBonLivraison')->nullable();
 

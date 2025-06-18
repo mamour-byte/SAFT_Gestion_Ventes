@@ -56,8 +56,8 @@ class BordereauPdfController extends Controller
             }
         }
         $detail = $vente->details->first();
-        $numeroCommande = $detail->numeroCommande ?? '-';
-        $dateLivraison = $detail->dateLivraison ?? '-';
+        $numeroCommande = $detail->NumeroCommande ?? '-';
+        $dateLivraison = $detail->DateLivraison ?? '-';
         $numeroBonLivraison = $detail->numeroBonLivraison ?? '-';
 
 

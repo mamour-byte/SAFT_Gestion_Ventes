@@ -87,7 +87,7 @@
     <div class="Infos">
         <strong>Bon de Livraison N° :</strong> {{ $numero_bon_livraison }}<br>
         <strong>Date de Livraison :</strong> {{ $date_livraison }}<br>
-        <strong>Numero de Commande :</strong> {{ $numero_commande }} <br>
+        <strong>Numero de Bon Commande :</strong> {{ $numero_commande }} <br>
     </div>
 
     <table>
